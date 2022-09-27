@@ -1,24 +1,35 @@
-import { SchemaObjectFactory } from '@nestjs/swagger/dist/services/schema-object-factory';
+import { Type as NestType } from '@nestjs/common';
+import { SchemaObjectFactory as SchemaObjectFactoryClass } from '@nestjs/swagger/dist/services/schema-object-factory';
 import { isTypeboxDto } from './util';
 
-export function patchNestJsSwagger() {
+function getSchemaObjectFactory(): NestType<SchemaObjectFactoryClass> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require('@nestjs/swagger/dist/services/schema-object-factory').SchemaObjectFactory;
+}
+
+export function patchNestJsSwagger(SchemaObjectFactory = getSchemaObjectFactory()) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((SchemaObjectFactory.prototype as any).__primatePatched) return;
     const defaultExplore = SchemaObjectFactory.prototype.exploreModelSchema;
 
-    const extendedExplore: SchemaObjectFactory['exploreModelSchema'] = function exploreModelSchema(
-        this: SchemaObjectFactory,
+    const extendedExplore: SchemaObjectFactoryClass['exploreModelSchema'] = function exploreModelSchema(
+        this: SchemaObjectFactoryClass,
         type,
         schemas,
         schemaRefsStack
     ) {
-        const name = defaultExplore(type, schemas, schemaRefsStack);
-
-        if (isTypeboxDto(type)) {
-            schemas[name] = type.toJsonSchema();
+        if (this['isLazyTypeFunc'](type)) {
+            const factory = type as () => NestType<unknown>;
+            type = factory();
         }
 
-        return name;
+        if (!isTypeboxDto(type)) {
+            return defaultExplore(type, schemas, schemaRefsStack);
+        }
+
+        schemas[type.name] = type.toJsonSchema();
+
+        return type.name;
     };
 
     SchemaObjectFactory.prototype.exploreModelSchema = extendedExplore;
