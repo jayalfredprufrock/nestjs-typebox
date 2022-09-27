@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 0.1.4
+
+### Patch Changes
+
+-   65de093: simplify swagger patch now that bug is fixed
+
 ## 0.1.3
 
 ### Patch Changes
