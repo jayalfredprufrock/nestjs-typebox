@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 0.1.3
+
+### Patch Changes
+
+-   bae856d: Copy zod patch approach to see if that fixes things
+
 ## 0.1.2
 
 ### Patch Changes
