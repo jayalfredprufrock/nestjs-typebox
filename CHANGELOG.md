@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 0.1.2
+
+### Patch Changes
+
+-   b9c40c4: Stop minifying dist files
+
 ## 0.1.1
 
 ### Patch Changes
