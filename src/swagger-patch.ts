@@ -12,13 +12,13 @@ export function patchNestJsSwagger() {
         schemas,
         schemaRefsStack
     ) {
-        if (!isTypeboxDto(type)) {
-            return defaultExplore(type, schemas, schemaRefsStack);
+        const name = defaultExplore(type, schemas, schemaRefsStack);
+
+        if (isTypeboxDto(type)) {
+            schemas[name] = type.toJsonSchema();
         }
 
-        schemas[type.name] = type.toJsonSchema();
-
-        return type.name;
+        return name;
     };
 
     SchemaObjectFactory.prototype.exploreModelSchema = extendedExplore;

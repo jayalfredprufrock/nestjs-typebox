@@ -16,7 +16,7 @@ export default defineConfig({
         },
         sourcemap: true,
         target: 'esnext',
-        minify: true,
+        minify: false,
     },
     plugins: [dts()],
 });
