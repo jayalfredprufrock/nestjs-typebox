@@ -13,18 +13,18 @@ export function patchNestJsSwagger() {
         schemas,
         schemaRefsStack
     ) {
-        const name = defaultExplore(type, schemas, schemaRefsStack);
-
         if (this['isLazyTypeFunc'](type)) {
             const factory = type as () => NestType<unknown>;
             type = factory();
         }
 
-        if (isTypeboxDto(type)) {
-            schemas[name] = type.toJsonSchema();
+        if (!isTypeboxDto(type)) {
+            return defaultExplore.apply(this, [type, schemas, schemaRefsStack]);
         }
 
-        return name;
+        schemas[type.name] = type.toJsonSchema();
+
+        return type.name;
     };
 
     SchemaObjectFactory.prototype.exploreModelSchema = extendedExplore;
