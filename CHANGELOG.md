@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 0.1.5
+
+### Patch Changes
+
+-   083d296: use apply to call original swagger method to avoid clobbering this
+
 ## 0.1.4
 
 ### Patch Changes
