@@ -11,7 +11,7 @@ npm i nestjs-typebox
 
 ### 1. Apply patches, install global interceptor and pipe
 
-```
+```ts
 // main.ts
 
 import { Reflector } from '@nestjs/core';
@@ -25,28 +25,27 @@ patchNestJsSwagger();
 applyFormats();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule);
 
-  // NOTE: registering global pipes/interceptors via app.module.ts is preferred
-  // The following is included here for brevity:
+    // NOTE: registering global pipes/interceptors via app.module.ts is preferred
+    // The following is included here for brevity:
 
-  // provides request validation
-  app.useGlobalPipes(new TypeboxValidationPipe());
+    // provides request validation
+    app.useGlobalPipes(new TypeboxValidationPipe());
 
-  // provides response validation and transformation
-  app.useGlobalInterceptors(new TypeboxTransformInterceptor(app.get(Reflector)));
+    // provides response validation and transformation
+    app.useGlobalInterceptors(new TypeboxTransformInterceptor(app.get(Reflector)));
 
-  await app.listen(3000);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+    await app.listen(3000);
+    console.log(`Application is running on: ${await app.getUrl()}`);
 }
 
 bootstrap();
-
 ```
 
 ### 2. Create TypeBox schema
 
-```
+```ts
 import { Type } from '@sinclair/typebox';
 
 export const CatSchema = Type.Object({
@@ -56,21 +55,15 @@ export const CatSchema = Type.Object({
     }),
     name: Type.String({
         description: 'The name of the cat.',
-        examples: ['Figaro']
+        examples: ['Figaro'],
     }),
-    type: Type.Union([
-        Type.Literal('tabby'),
-        Type.Literal('short-hair'),
-        Type.Literal('maine-coon'),
-        Type.Literal('siamese')
-    ])
+    type: Type.Union([Type.Literal('tabby'), Type.Literal('short-hair'), Type.Literal('maine-coon'), Type.Literal('siamese')]),
 });
-
 ```
 
 ### 3. Create DTOs
 
-```
+```ts
 import { Type } from '@sinclair/typebox';
 import { createTypeboxDto } from 'nestjs-typebox';
 
@@ -85,7 +78,7 @@ export class CatResponseDto extends createTypeboxDto(CatSchema) {}
 
 ### 4. Reference DTOs in Controller Methods
 
-```
+```ts
 import { Params } from 'nestjs-typebox';
 
 @Controller('cats')
