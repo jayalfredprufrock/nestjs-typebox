@@ -92,7 +92,7 @@ export class CatController {
     }
 
     @Get(':id')
-    async getCat(@Params() params:CatParamsDto): Promise<CatResponseDto> {
+    async getCat(@Params() params: CatParamsDto): Promise<CatResponseDto> {
         return this.catService.getCat(params.id);
     }
 
