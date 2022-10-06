@@ -1,5 +1,12 @@
 # nestjs-typebox
 
+## 0.1.6
+
+### Patch Changes
+
+-   820ac92: fix: swap esbuild for swc to make sure \_\_metadata is emitted
+-   6cd9762: Add usage instructions to readme
+
 ## 0.1.5
 
 ### Patch Changes
