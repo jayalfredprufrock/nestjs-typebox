@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 0.2.0
+
+### Minor Changes
+
+-   20dcd69: Remove concept of transform for now and allow beforeValidate to return new data
+
 ## 0.1.6
 
 ### Patch Changes
