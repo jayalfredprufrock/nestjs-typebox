@@ -3,19 +3,17 @@ import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 import { tryCoerceToNumber } from './util';
 import { TypeboxValidationException } from './exceptions';
 
-export interface TypeboxDto<T extends TProperties, R = Static<TObject<T>>> {
-    new (): R;
+export interface TypeboxDto<T extends TProperties> {
+    new (): Static<TObject<T>>;
     isTypeboxDto: true;
     typeboxSchema: TObject<T>;
     validator: TypeCheck<TObject<T>> | undefined;
     toJsonSchema(): TObject<T>;
-    beforeValidate(data: unknown): unknown;
-    validate(data: unknown): unknown;
-    transform(data: Static<TObject<T>>): R;
+    beforeValidate(data: Record<string, unknown>): unknown;
+    validate(data: unknown): Static<TObject<T>>;
 }
 
-export interface DtoOptions<T extends TProperties, R = Static<TObject<T>>> {
-    transform?: (data: Static<TObject<T>>) => R;
+export interface DtoOptions {
     coerceTypes?: boolean;
     stripUnknownProps?: boolean;
 }
@@ -24,7 +22,7 @@ export abstract class TypeboxModel<T extends TProperties> {
     abstract readonly data: T;
 }
 
-export const createTypeboxDto = <T extends TProperties, R = Static<TObject<T>>>(schema: TObject<T>, options?: DtoOptions<T, R>) => {
+export const createTypeboxDto = <T extends TProperties>(schema: TObject<T>, options?: DtoOptions) => {
     class AugmentedTypeboxDto extends TypeboxModel<Static<TObject<T>>> {
         public static isTypeboxDto = true;
         public static schema = schema;
@@ -38,8 +36,7 @@ export const createTypeboxDto = <T extends TProperties, R = Static<TObject<T>>>(
         public static beforeValidate(data: Record<string, unknown>): unknown {
             const result = this.options?.stripUnknownProps ? ({} as Record<string, unknown>) : data;
             if (this.options?.coerceTypes || this.options?.stripUnknownProps) {
-                const schema = this.toJsonSchema();
-                for (const [prop, def] of Object.entries(schema.properties)) {
+                for (const [prop, def] of Object.entries(this.schema.properties)) {
                     if (data[prop] === undefined) continue;
                     switch (def.type) {
                         case 'number':
@@ -53,18 +50,22 @@ export const createTypeboxDto = <T extends TProperties, R = Static<TObject<T>>>(
             return result;
         }
 
-        public static validate(data: unknown): void {
+        public static validate(data: unknown): Static<TObject<T>> {
             if (!this.validator) {
                 this.validator = TypeCompiler.Compile(this.schema);
             }
 
-            if (!this.validator.Check(data)) {
-                throw new TypeboxValidationException(this.validator.Errors(data));
+            if (!data || typeof data !== 'object') {
+                throw new Error('DTOs are expected to always be objects.');
             }
-        }
 
-        public static transform(data: Static<TObject<T>>): R {
-            return this.options?.transform?.(data) ?? (data as unknown as R);
+            const processedData = this.beforeValidate(data as Record<string, unknown>);
+
+            if (!this.validator.Check(processedData)) {
+                throw new TypeboxValidationException(this.validator.Errors(processedData));
+            }
+
+            return processedData;
         }
 
         constructor(readonly data: Static<TObject<T>>) {
@@ -72,5 +73,5 @@ export const createTypeboxDto = <T extends TProperties, R = Static<TObject<T>>>(
         }
     }
 
-    return AugmentedTypeboxDto as unknown as TypeboxDto<T, R>;
+    return AugmentedTypeboxDto as unknown as TypeboxDto<T>;
 };

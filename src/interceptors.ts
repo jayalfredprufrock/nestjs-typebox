@@ -21,12 +21,7 @@ export class TypeboxTransformInterceptor implements NestInterceptor {
 
                 return dataArray.map((dataOrModel: unknown) => {
                     const data = dataOrModel instanceof TypeboxModel ? dataOrModel.data : dataOrModel;
-
-                    if (responseType.validate) {
-                        responseType.validate(data);
-                    }
-
-                    return responseType.transform ? responseType.transform(data) : data;
+                    return responseType.validate ? responseType.validate(data) : data;
                 });
             })
         );

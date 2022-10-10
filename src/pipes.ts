@@ -10,8 +10,6 @@ export class TypeboxValidationPipe implements PipeTransform {
             return value;
         }
 
-        metatype.validate(metatype.beforeValidate(value));
-
-        return value;
+        return metatype.validate(value);
     }
 }
