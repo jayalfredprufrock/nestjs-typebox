@@ -1,9 +1,15 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { DECORATORS } from '@nestjs/swagger/dist/constants';
-import { TypeboxModel } from './create-dto';
+import { TypeboxDto, TypeboxModel } from './create-dto';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { TObject } from '@sinclair/typebox';
+
+const validateDataOrModel = (dataOrModel: unknown, validate?: TypeboxDto<TObject>['validate']) => {
+    const data = dataOrModel instanceof TypeboxModel ? dataOrModel.data : dataOrModel;
+    return validate ? validate(data) : data;
+};
 
 @Injectable()
 export class TypeboxTransformInterceptor implements NestInterceptor {
@@ -17,12 +23,11 @@ export class TypeboxTransformInterceptor implements NestInterceptor {
 
                 if (!responseType) return data;
 
-                const dataArray = Array.isArray(data) ? data : [data];
+                if (Array.isArray(data)) {
+                    return data.map(dataOrModel => validateDataOrModel(dataOrModel, responseType.validate));
+                }
 
-                return dataArray.map((dataOrModel: unknown) => {
-                    const data = dataOrModel instanceof TypeboxModel ? dataOrModel.data : dataOrModel;
-                    return responseType.validate ? responseType.validate(data) : data;
-                });
+                return validateDataOrModel(data, responseType.validate);
             })
         );
     }
