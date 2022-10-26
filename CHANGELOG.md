@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 0.2.2
+
+### Patch Changes
+
+-   6941dcb: preserve this context when calling dto validate
+
 ## 0.2.1
 
 ### Patch Changes
