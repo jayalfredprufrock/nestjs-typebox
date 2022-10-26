@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 0.2.1
+
+### Patch Changes
+
+-   f233aa4: fix: response transformer should leave non-arrays as is
+
 ## 0.2.0
 
 ### Minor Changes
