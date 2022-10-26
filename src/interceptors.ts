@@ -6,9 +6,9 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TObject } from '@sinclair/typebox';
 
-const validateDataOrModel = (dataOrModel: unknown, validate?: TypeboxDto<TObject>['validate']) => {
+const validateDataOrModel = (dataOrModel: unknown, dto?: TypeboxDto<TObject>) => {
     const data = dataOrModel instanceof TypeboxModel ? dataOrModel.data : dataOrModel;
-    return validate ? validate(data) : data;
+    return dto?.validate ? dto.validate(data) : data;
 };
 
 @Injectable()
@@ -19,15 +19,15 @@ export class TypeboxTransformInterceptor implements NestInterceptor {
         return next.handle().pipe(
             map(data => {
                 const responseMeta = this.reflector.get(DECORATORS.API_RESPONSE, context.getHandler());
-                const responseType = (responseMeta['200'] || responseMeta['201'] || {})['type'];
+                const dto = (responseMeta['200'] || responseMeta['201'] || {})['type'];
 
-                if (!responseType) return data;
+                if (!dto) return data;
 
                 if (Array.isArray(data)) {
-                    return data.map(dataOrModel => validateDataOrModel(dataOrModel, responseType.validate));
+                    return data.map(dataOrModel => validateDataOrModel(dataOrModel, dto));
                 }
 
-                return validateDataOrModel(data, responseType.validate);
+                return validateDataOrModel(data, dto);
             })
         );
     }
