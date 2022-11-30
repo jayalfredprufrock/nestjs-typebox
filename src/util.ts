@@ -5,16 +5,16 @@ export function isTypeboxDto(metatype: any): metatype is TypeboxDto<{}> {
     return typeof metatype === 'function' && metatype?.isTypeboxDto;
 }
 
-export const tryCoerceToNumber = (val: unknown): unknown => {
+export const tryCoerceToNumber = (val: unknown, integer?: boolean): unknown => {
     switch (typeof val) {
         case 'number':
-            return val;
+            return integer ? Math.floor(val) : val;
         case 'boolean':
             return val === true ? 1 : 0;
         case 'string': {
             const v = Number(val);
             if (Number.isFinite(v)) {
-                return v;
+                return integer ? Math.floor(v) : v;
             }
             break;
         }

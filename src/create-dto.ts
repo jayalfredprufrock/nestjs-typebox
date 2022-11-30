@@ -40,7 +40,8 @@ export const createTypeboxDto = <T extends TProperties>(schema: TObject<T>, opti
                     if (data[prop] === undefined) continue;
                     switch (def.type) {
                         case 'number':
-                            result[prop] = tryCoerceToNumber(data[prop]);
+                        case 'integer':
+                            result[prop] = tryCoerceToNumber(data[prop], def.type === 'integer');
                             break;
                         default:
                             result[prop] = data[prop];
