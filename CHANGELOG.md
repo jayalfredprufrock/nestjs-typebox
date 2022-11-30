@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 0.3.0
+
+### Minor Changes
+
+-   5b86b6d: support for integer data type
+
 ## 0.2.2
 
 ### Patch Changes
