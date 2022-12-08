@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 0.4.0
+
+### Minor Changes
+
+-   c2e150f: feat: basic support for object unions
+
 ## 0.3.0
 
 ### Minor Changes
