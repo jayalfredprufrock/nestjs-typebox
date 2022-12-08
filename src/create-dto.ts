@@ -1,16 +1,18 @@
-import { Static, TObject, TProperties, Type } from '@sinclair/typebox';
+import { Static, TObject, TProperties, TUnion, Type } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 import { tryCoerceToNumber } from './util';
 import { TypeboxValidationException } from './exceptions';
 
+export type DtoSchema<T extends TProperties> = TObject<T> | TUnion<TObject<T>[]>;
+
 export interface TypeboxDto<T extends TProperties> {
-    new (): Static<TObject<T>>;
+    new (): Static<DtoSchema<T>>;
     isTypeboxDto: true;
-    typeboxSchema: TObject<T>;
-    validator: TypeCheck<TObject<T>> | undefined;
-    toJsonSchema(): TObject<T>;
+    typeboxSchema: DtoSchema<T>;
+    validator: TypeCheck<DtoSchema<T>> | undefined;
+    toJsonSchema(): DtoSchema<T>;
     beforeValidate(data: Record<string, unknown>): unknown;
-    validate(data: unknown): Static<TObject<T>>;
+    validate(data: unknown): Static<DtoSchema<T>>;
 }
 
 export interface DtoOptions {
@@ -22,12 +24,12 @@ export abstract class TypeboxModel<T extends TProperties> {
     abstract readonly data: T;
 }
 
-export const createTypeboxDto = <T extends TProperties>(schema: TObject<T>, options?: DtoOptions) => {
-    class AugmentedTypeboxDto extends TypeboxModel<Static<TObject<T>>> {
+export const createTypeboxDto = <T extends TProperties>(schema: DtoSchema<T>, options?: DtoOptions) => {
+    class AugmentedTypeboxDto extends TypeboxModel<Static<DtoSchema<T>>> {
         public static isTypeboxDto = true;
         public static schema = schema;
         public static options = options;
-        public static validator: TypeCheck<TObject<T>> | undefined;
+        public static validator: TypeCheck<DtoSchema<T>> | undefined;
 
         public static toJsonSchema() {
             return Type.Strict(this.schema);
@@ -36,15 +38,19 @@ export const createTypeboxDto = <T extends TProperties>(schema: TObject<T>, opti
         public static beforeValidate(data: Record<string, unknown>): unknown {
             const result = this.options?.stripUnknownProps ? ({} as Record<string, unknown>) : data;
             if (this.options?.coerceTypes || this.options?.stripUnknownProps) {
-                for (const [prop, def] of Object.entries(this.schema.properties)) {
-                    if (data[prop] === undefined) continue;
-                    switch (def.type) {
-                        case 'number':
-                        case 'integer':
-                            result[prop] = tryCoerceToNumber(data[prop], def.type === 'integer');
-                            break;
-                        default:
-                            result[prop] = data[prop];
+                const schemaProps = this.schema.anyOf ?? [this.schema.properties];
+                for (const props of schemaProps) {
+                    for (const [prop, def] of Object.entries(props)) {
+                        if (data[prop] === undefined) continue;
+                        const type = def && typeof def === 'object' && 'type' in def ? String(def.type) : 'unknown';
+                        switch (type) {
+                            case 'number':
+                            case 'integer':
+                                result[prop] = tryCoerceToNumber(data[prop], type === 'integer');
+                                break;
+                            default:
+                                result[prop] = data[prop];
+                        }
                     }
                 }
             }
