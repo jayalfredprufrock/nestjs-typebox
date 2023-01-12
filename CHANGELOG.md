@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 0.4.1
+
+### Patch Changes
+
+-   cc7bc57: Ugprade typebox dep
+
 ## 0.4.0
 
 ### Minor Changes
