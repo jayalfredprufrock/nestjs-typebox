@@ -63,5 +63,9 @@
         "json-schema",
         "nestjs-typebox",
         "class-validator"
-    ]
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jayalfredprufrock/nestjs-typebox"
+    },
 }
