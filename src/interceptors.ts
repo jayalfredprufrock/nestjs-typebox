@@ -4,9 +4,8 @@ import { DECORATORS } from '@nestjs/swagger/dist/constants';
 import { TypeboxDto, TypeboxModel } from './create-dto';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { TObject } from '@sinclair/typebox';
 
-const validateDataOrModel = (dataOrModel: unknown, dto?: TypeboxDto<TObject>) => {
+const validateDataOrModel = (dataOrModel: unknown, dto?: TypeboxDto) => {
     const data = dataOrModel instanceof TypeboxModel ? dataOrModel.data : dataOrModel;
     return dto?.validate ? dto.validate(data) : data;
 };

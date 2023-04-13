@@ -1,8 +1,8 @@
-import { Format } from '@sinclair/typebox/format';
+import { FormatRegistry } from '@sinclair/typebox';
 
 const emailRegex = /.+\@.+\..+/;
 export const emailFormat = (value: string) => value.match(emailRegex) !== null;
 
 export const applyFormats = () => {
-    Format.Set('email', emailFormat);
+    FormatRegistry.Set('email', emailFormat);
 };

@@ -1,11 +1,12 @@
-import { Static, TObject, TProperties, TUnion, Type } from '@sinclair/typebox';
+import { Static, TObject, TUnion, Type, TSchema } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 import { tryCoerceToNumber } from './util';
 import { TypeboxValidationException } from './exceptions';
 
-export type DtoSchema<T extends TProperties> = TObject<T> | TUnion<TObject<T>[]>;
+export type DtoProperties = Record<string, TSchema>;
+export type DtoSchema<T extends DtoProperties> = TObject<T> | TUnion<TObject<T>[]>;
 
-export interface TypeboxDto<T extends TProperties> {
+export interface TypeboxDto<T extends DtoProperties = TObject> {
     new (): Static<DtoSchema<T>>;
     isTypeboxDto: true;
     typeboxSchema: DtoSchema<T>;
@@ -20,11 +21,11 @@ export interface DtoOptions {
     stripUnknownProps?: boolean;
 }
 
-export abstract class TypeboxModel<T extends TProperties> {
+export abstract class TypeboxModel<T extends DtoProperties> {
     abstract readonly data: T;
 }
 
-export const createTypeboxDto = <T extends TProperties>(schema: DtoSchema<T>, options?: DtoOptions) => {
+export const createTypeboxDto = <T extends DtoProperties>(schema: DtoSchema<T>, options?: DtoOptions) => {
     class AugmentedTypeboxDto extends TypeboxModel<Static<DtoSchema<T>>> {
         public static isTypeboxDto = true;
         public static schema = schema;
