@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 1.0.0
+
+### Major Changes
+
+-   ac3e770: Support for latest typebox and vitejs versions
+
 ## 0.4.1
 
 ### Patch Changes
