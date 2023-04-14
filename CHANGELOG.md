@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 1.0.2
+
+### Patch Changes
+
+-   7f5e932: handle undefined parameter decorator keys
+
 ## 1.0.1
 
 ### Patch Changes
