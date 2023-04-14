@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 1.0.1
+
+### Patch Changes
+
+-   ce13144: Upgrade vite-dts lib to get proper types emitted
+
 ## 1.0.0
 
 ### Major Changes
