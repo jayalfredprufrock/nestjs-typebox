@@ -6,8 +6,9 @@ import { isTypeboxDto } from './util';
 
 export const Params = (): ParameterDecorator => {
     return (target, key, index) => {
-        const args = Reflect.getMetadata(ROUTE_ARGS_METADATA, target.constructor, key) || {};
-        const [type] = Reflect.getMetadata('design:paramtypes', target, key);
+        if (!key) return;
+        const args = Reflect.getMetadata(ROUTE_ARGS_METADATA, target.constructor, key) ?? {};
+        const [type] = Reflect.getMetadata('design:paramtypes', target, key) ?? [];
         if (isTypeboxDto(type)) {
             const objSchema = type.toJsonSchema();
             if (objSchema.type === 'object') {
