@@ -119,4 +119,4 @@ Swagger patch derived from https://github.com/risenforces/nestjs-zod
 
 ### Todo
 
-Introduce concept of input/output schemas to support transformations
+-   Check for parameter mapping at boot time and throw

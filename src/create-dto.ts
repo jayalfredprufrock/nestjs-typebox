@@ -1,36 +1,32 @@
-import { Static, TObject, TUnion, Type, TSchema } from '@sinclair/typebox';
+import { Static, Type, TSchema } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 import { tryCoerceToNumber } from './util';
 import { TypeboxValidationException } from './exceptions';
-
-export type DtoProperties = Record<string, TSchema>;
-export type DtoSchema<T extends DtoProperties> = TObject<T> | TUnion<TObject<T>[]>;
-
-export interface TypeboxDto<T extends DtoProperties = TObject> {
-    new (): Static<DtoSchema<T>>;
+export interface TypeboxDto<T extends TSchema = TSchema> {
+    new (data: Static<T>): TypeboxModel<T>;
     isTypeboxDto: true;
-    typeboxSchema: DtoSchema<T>;
-    validator: TypeCheck<DtoSchema<T>> | undefined;
-    toJsonSchema(): DtoSchema<T>;
+    typeboxSchema: T;
+    validator: TypeCheck<T> | undefined;
+    toJsonSchema(): T;
     beforeValidate(data: Record<string, unknown>): unknown;
-    validate(data: unknown): Static<DtoSchema<T>>;
+    validate(data: unknown): Static<T>;
+    getModel(data: Static<T>): TypeboxModel<T>;
 }
 
 export interface DtoOptions {
     coerceTypes?: boolean;
     stripUnknownProps?: boolean;
 }
-
-export abstract class TypeboxModel<T extends DtoProperties> {
-    abstract readonly data: T;
+export abstract class TypeboxModel<T extends TSchema> {
+    data!: Static<T>;
 }
 
-export const createTypeboxDto = <T extends DtoProperties>(schema: DtoSchema<T>, options?: DtoOptions) => {
-    class AugmentedTypeboxDto extends TypeboxModel<Static<DtoSchema<T>>> {
+export const createTypeboxDto = <T extends TSchema>(schema: T, options?: DtoOptions) => {
+    class AugmentedTypeboxDto extends TypeboxModel<T> {
         public static isTypeboxDto = true;
         public static schema = schema;
         public static options = options;
-        public static validator: TypeCheck<DtoSchema<T>> | undefined;
+        public static validator: TypeCheck<T> | undefined;
 
         public static toJsonSchema() {
             return Type.Strict(this.schema);
@@ -58,7 +54,7 @@ export const createTypeboxDto = <T extends DtoProperties>(schema: DtoSchema<T>, 
             return result;
         }
 
-        public static validate(data: unknown): Static<TObject<T>> {
+        public static validate(data: unknown): Static<T> {
             if (!this.validator) {
                 this.validator = TypeCompiler.Compile(this.schema);
             }
@@ -76,10 +72,44 @@ export const createTypeboxDto = <T extends DtoProperties>(schema: DtoSchema<T>, 
             return processedData;
         }
 
-        constructor(readonly data: Static<TObject<T>>) {
+        constructor(readonly data: Static<T>) {
             super();
+            AugmentedTypeboxDto.validate(data);
         }
     }
 
-    return AugmentedTypeboxDto as unknown as TypeboxDto<T>;
+    return AugmentedTypeboxDto;
 };
+
+export const AssetSchemaBase = Type.Object({
+    id: Type.String(),
+});
+
+export type AssetBase = Static<typeof AssetSchemaBase>;
+
+export const FolderAssetSchema = Type.Composite([
+    AssetSchemaBase,
+    Type.Object({
+        type: Type.Literal('folder'),
+    }),
+]);
+
+export const BlockAssetSchema = Type.Composite([
+    AssetSchemaBase,
+    Type.Object({
+        type: Type.Literal('string'),
+        another: Type.String(),
+    }),
+]);
+
+export const LibraryAssetSchema = Type.Union([FolderAssetSchema, BlockAssetSchema]);
+
+export type LibraryAsset = Static<typeof LibraryAssetSchema>;
+
+class AssetDto extends createTypeboxDto(LibraryAssetSchema) {
+    getName(): string {
+        return this.data.id;
+    }
+}
+const test = new AssetDto({ id: 'test', type: 'folder' });
+test.getName();
