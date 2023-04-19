@@ -1,5 +1,12 @@
 # nestjs-typebox
 
+## 1.0.3
+
+### Patch Changes
+
+-   05eed8f: Loosen type restrictions on dtos
+-   2f5606f: update deps
+
 ## 1.0.2
 
 ### Patch Changes
