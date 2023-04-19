@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 1.0.4
+
+### Patch Changes
+
+-   82ab159: fix: merge union schemas so dto classes can construct them
+
 ## 1.0.3
 
 ### Patch Changes
