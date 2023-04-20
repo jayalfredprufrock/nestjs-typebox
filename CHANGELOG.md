@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 1.0.5
+
+### Patch Changes
+
+-   05b5975: force dto type as any when returning union
+
 ## 1.0.4
 
 ### Patch Changes
