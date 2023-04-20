@@ -3,6 +3,8 @@ import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum';
 import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 import { DECORATORS } from '@nestjs/swagger/dist/constants';
 import { isTypeboxDto } from './util';
+import { Static, TSchema } from '@sinclair/typebox';
+import { TypeboxDto } from './create-dto';
 
 export const Params = (): ParameterDecorator => {
     return (target, key, index) => {
@@ -27,5 +29,24 @@ export const Params = (): ParameterDecorator => {
             }
         }
         Reflect.defineMetadata(ROUTE_ARGS_METADATA, assignMetadata(args, RouteParamtypes.PARAM, index), target.constructor, key);
+    };
+};
+
+export type MethodDecorator<T extends (...args: unknown[]) => unknown> = (
+    target: unknown,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<T>
+) => TypedPropertyDescriptor<T> | void;
+
+export type RespType<T extends TSchema> = Static<T> | Promise<Static<T>> | Static<T>[] | Promise<Static<T>[]>;
+
+export const RespValidate = <T extends TSchema>(
+    dto: TypeboxDto<T>,
+    responseCode = 200
+): MethodDecorator<(...args: unknown[]) => RespType<T>> => {
+    return (target, key, descriptor) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Reflect.defineMetadata(DECORATORS.API_RESPONSE, { [responseCode]: { type: dto } }, (target as any)[key]);
+        return descriptor;
     };
 };

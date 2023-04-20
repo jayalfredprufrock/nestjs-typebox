@@ -120,3 +120,5 @@ Swagger patch derived from https://github.com/risenforces/nestjs-zod
 ### Todo
 
 -   Check for parameter mapping at boot time and throw
+-   RespValidate observable support
+-   Extract logic out of DTO creator so validation observables can also take regular typebox schemas

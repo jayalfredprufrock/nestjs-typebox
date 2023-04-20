@@ -1,11 +1,10 @@
-import { Static, Type, TSchema } from '@sinclair/typebox';
+import { Static, Type, TSchema, TObject } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 import { tryCoerceToNumber } from './util';
 import { TypeboxValidationException } from './exceptions';
-import { Merge } from './types';
-
 export interface TypeboxDto<T extends TSchema = TSchema> {
-    new (): Merge<Static<T>>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    new (): T extends TObject ? Static<T> : any;
     isTypeboxDto: true;
     typeboxSchema: T;
     validator: TypeCheck<T> | undefined;
