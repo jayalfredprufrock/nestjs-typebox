@@ -122,3 +122,4 @@ Swagger patch derived from https://github.com/risenforces/nestjs-zod
 -   Check for parameter mapping at boot time and throw
 -   RespValidate observable support
 -   Extract logic out of DTO creator so validation observables can also take regular typebox schemas
+-   Add note about Dto "any" behavior for non-object schemas (i.e. unions) (A class can only implement an object type or intersection of object types with statically known members)
