@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 1.0.7
+
+### Patch Changes
+
+-   d6d8b0c: update deps
+
 ## 1.0.6
 
 ### Patch Changes
