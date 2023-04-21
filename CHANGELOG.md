@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 1.0.6
+
+### Patch Changes
+
+-   41e2c08: fix: restore typebox dto typecheck in interceptor
+
 ## 1.0.5
 
 ### Patch Changes
