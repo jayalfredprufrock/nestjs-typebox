@@ -1,5 +1,6 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
-import { isTypeboxDto } from './util';
+
+import { isTypeboxDto } from './util.js';
 
 @Injectable()
 export class TypeboxValidationPipe implements PipeTransform {

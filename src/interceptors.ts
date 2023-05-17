@@ -1,9 +1,10 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { DECORATORS } from '@nestjs/swagger/dist/constants';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { isTypeboxDto } from './util';
+
+import { isTypeboxDto } from './util.js';
 
 @Injectable()
 export class TypeboxTransformInterceptor implements NestInterceptor {

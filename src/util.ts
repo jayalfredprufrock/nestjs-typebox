@@ -1,4 +1,4 @@
-import type { TypeboxDto } from './create-dto';
+import type { TypeboxDto } from './create-dto.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
 export function isTypeboxDto(metatype: any): metatype is TypeboxDto {

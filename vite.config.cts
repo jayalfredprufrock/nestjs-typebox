@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite';
-import dts from 'vite-dts';
 // eslint-disable-next-line import/no-unresolved
 import swc from 'unplugin-swc';
+import { defineConfig } from 'vite';
+import { dts } from 'vite-dts';
 
 export default defineConfig({
     build: {

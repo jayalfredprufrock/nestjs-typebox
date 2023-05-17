@@ -2,7 +2,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "soruce.format": true,
-    },
-    "typescript.preferences.quoteStyle": "single",
+        "source.fixAll": true
+    }
 }

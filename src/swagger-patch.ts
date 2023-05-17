@@ -1,6 +1,7 @@
 import { Type as NestType } from '@nestjs/common';
 import { SchemaObjectFactory } from '@nestjs/swagger/dist/services/schema-object-factory';
-import { isTypeboxDto } from './util';
+
+import { isTypeboxDto } from './util.js';
 
 export function patchNestJsSwagger() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

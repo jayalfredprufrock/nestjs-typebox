@@ -1,10 +1,11 @@
 import { assignMetadata } from '@nestjs/common';
-import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum';
 import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
+import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum';
 import { DECORATORS } from '@nestjs/swagger/dist/constants';
-import { isTypeboxDto } from './util';
 import { Static, TSchema } from '@sinclair/typebox';
-import { TypeboxDto } from './create-dto';
+
+import { TypeboxDto } from './create-dto.js';
+import { isTypeboxDto } from './util.js';
 
 export const Params = (): ParameterDecorator => {
     return (target, key, index) => {

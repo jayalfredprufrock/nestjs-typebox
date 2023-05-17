@@ -1,7 +1,9 @@
-import { Static, Type, TSchema, TObject } from '@sinclair/typebox';
+import { Static, TObject, TSchema, Type } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
-import { tryCoerceToNumber } from './util';
-import { TypeboxValidationException } from './exceptions';
+
+import { TypeboxValidationException } from './exceptions.js';
+import { tryCoerceToNumber } from './util.js';
+
 export interface TypeboxDto<T extends TSchema = TSchema> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     new (): T extends TObject ? Static<T> : any;
