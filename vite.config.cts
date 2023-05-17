@@ -17,7 +17,7 @@ export default defineConfig({
             },
         },
         sourcemap: true,
-        target: 'es2022',
+        target: 'esnext',
         minify: false,
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

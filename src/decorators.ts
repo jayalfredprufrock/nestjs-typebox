@@ -1,7 +1,7 @@
 import { assignMetadata } from '@nestjs/common';
-import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
-import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum';
-import { DECORATORS } from '@nestjs/swagger/dist/constants';
+import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants.js';
+import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
+import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
 import { Static, TSchema } from '@sinclair/typebox';
 
 import { TypeboxDto } from './create-dto.js';

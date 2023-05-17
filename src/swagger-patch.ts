@@ -1,5 +1,5 @@
 import { Type as NestType } from '@nestjs/common';
-import { SchemaObjectFactory } from '@nestjs/swagger/dist/services/schema-object-factory';
+import { SchemaObjectFactory } from '@nestjs/swagger/dist/services/schema-object-factory.js';
 
 import { isTypeboxDto } from './util.js';
 

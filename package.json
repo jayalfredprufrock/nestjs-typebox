@@ -16,7 +16,7 @@
         "dist"
     ],
     "scripts": {
-        "build": "vite build",
+        "build": "tsc && vite build",
         "lint": "eslint \"src/**/*.ts\" --fix",
         "prepare": "husky install"
     },
