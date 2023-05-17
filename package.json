@@ -5,11 +5,11 @@
     "description": "",
     "author": "Andrew Smiley <jayalfredprufrock@gmail.com>",
     "license": "MIT",
-    "main": "dist/nestjs-typebox.cjs.js",
-    "module": "dist/nestjs-typebox.es.js",
+    "main": "dist/nestjs-typebox.cjs",
+    "module": "dist/nestjs-typebox.mjs",
     "exports": {
-        "require": "./dist/nestjs-typebox.cjs.js",
-        "import": "./dist/nestjs-typebox.es.js"
+        "require": "./dist/nestjs-typebox.cjs",
+        "import": "./dist/nestjs-typebox.mjs"
     },
     "files": [
         "src",

@@ -8,7 +8,7 @@ export default defineConfig({
         lib: {
             entry: 'src/index.ts',
             formats: ['es', 'cjs'],
-            fileName: format => `nestjs-typebox.${format}.js`,
+            fileName: format => (format === 'cjs' ? 'nestjs-typebox.cjs' : 'nestjs-typebox.mjs'),
         },
         rollupOptions: {
             external: [/@nestjs\/.*/, /@sinclair\/.*/, /rxjs\/?.*/],
