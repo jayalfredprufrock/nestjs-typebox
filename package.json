@@ -1,7 +1,7 @@
 {
     "name": "nestjs-typebox",
     "type": "module",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "description": "",
     "author": "Andrew Smiley <jayalfredprufrock@gmail.com>",
     "license": "MIT",
