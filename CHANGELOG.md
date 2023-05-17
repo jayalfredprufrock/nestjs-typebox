@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.0.1
+
+### Patch Changes
+
+-   fe17f29: fix: use file extension when importing absolute nestjs files
+
 ## 2.0.0
 
 ### Major Changes
