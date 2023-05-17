@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.0.2
+
+### Patch Changes
+
+-   6bd610a: use cjs and mjs file extensions on build output
+
 ## 2.0.1
 
 ### Patch Changes
