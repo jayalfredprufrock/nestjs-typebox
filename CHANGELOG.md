@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.0.0
+
+### Major Changes
+
+-   646a659: Migrate to ESM. Major bump just to be safe
+
 ## 1.0.7
 
 ### Patch Changes
