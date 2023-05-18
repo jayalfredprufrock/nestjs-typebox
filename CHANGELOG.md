@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.1.0
+
+### Minor Changes
+
+-   b9c33c2: vite lib mode and esm just arent there yet
+
 ## 2.0.4
 
 ### Patch Changes
