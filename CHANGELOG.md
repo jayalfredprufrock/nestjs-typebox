@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.0.3
+
+### Patch Changes
+
+-   7e14c0e: include typings
+
 ## 2.0.2
 
 ### Patch Changes
