@@ -8,8 +8,12 @@
     "main": "dist/nestjs-typebox.cjs",
     "module": "dist/nestjs-typebox.mjs",
     "exports": {
-        "require": "./dist/nestjs-typebox.cjs",
-        "import": "./dist/nestjs-typebox.mjs"
+        ".": {
+            "types": "./dist/nestjs-typebox.d.ts",
+            "require": "./dist/nestjs-typebox.cjs",
+            "import": "./dist/nestjs-typebox.mjs",
+            "default": "./dist/nestjs-typebox.cjs"
+        }
     },
     "files": [
         "src",
