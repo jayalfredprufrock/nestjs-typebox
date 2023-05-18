@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.0.4
+
+### Patch Changes
+
+-   1af7324: Fix package exports again
+
 ## 2.0.3
 
 ### Patch Changes
