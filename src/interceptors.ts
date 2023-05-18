@@ -3,8 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
-import { isTypeboxDto } from './util.js';
+import { isSchemaValidator } from './decorators.js';
 
 @Injectable()
 export class TypeboxTransformInterceptor implements NestInterceptor {
@@ -14,15 +13,13 @@ export class TypeboxTransformInterceptor implements NestInterceptor {
         return next.handle().pipe(
             map(data => {
                 const responseMeta = this.reflector.get(DECORATORS.API_RESPONSE, context.getHandler());
-                const dto = (responseMeta['200'] || responseMeta['201'] || {})['type'];
+                const validator = (responseMeta['200'] || responseMeta['201'] || {})['type'];
 
-                if (!isTypeboxDto(dto)) return data;
-
-                if (Array.isArray(data)) {
-                    return data.map(datum => dto.validate(datum));
+                if (!isSchemaValidator(validator)) {
+                    return data;
                 }
 
-                return dto.validate(data);
+                return validator.validate(data);
             })
         );
     }
