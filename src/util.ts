@@ -1,15 +1,4 @@
-import type { TypeboxDto } from './create-dto.js';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
-export function isTypeboxDto(metatype: any): metatype is TypeboxDto {
-    return typeof metatype === 'function' && metatype?.isTypeboxDto;
-}
-
-export function isPromise(promise: unknown): promise is Promise<unknown> {
-    return !!promise && typeof promise === 'object' && 'then' in promise && typeof promise.then === 'function';
-}
-
-export const tryCoerceToNumber = (val: unknown, integer?: boolean): unknown => {
+export const coerceToNumber = (val: unknown, integer?: boolean): unknown => {
     switch (typeof val) {
         case 'number':
             return integer ? Math.floor(val) : val;
@@ -28,4 +17,14 @@ export const tryCoerceToNumber = (val: unknown, integer?: boolean): unknown => {
         }
     }
     return val;
+};
+
+export const coerceType = (type: string, val: unknown): unknown => {
+    switch (type) {
+        case 'number':
+        case 'integer':
+            return coerceToNumber(val, type === 'integer');
+        default:
+            return val;
+    }
 };

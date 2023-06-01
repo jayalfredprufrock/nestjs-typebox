@@ -1,7 +1,6 @@
 import { Type as NestType } from '@nestjs/common';
 import { SchemaObjectFactory } from '@nestjs/swagger/dist/services/schema-object-factory.js';
-
-import { isTypeboxDto } from './util.js';
+import { isSchemaValidator } from './decorators.js';
 
 export function patchNestJsSwagger() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,11 +18,11 @@ export function patchNestJsSwagger() {
             type = factory();
         }
 
-        if (!isTypeboxDto(type)) {
+        if (!isSchemaValidator(type)) {
             return defaultExplore.apply(this, [type, schemas, schemaRefsStack]);
         }
 
-        schemas[type.name] = type.toJsonSchema();
+        schemas[type.name] = type.schema;
 
         return type.name;
     };

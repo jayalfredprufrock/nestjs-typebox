@@ -1,8 +1,9 @@
 import { BadRequestException, HttpStatus } from '@nestjs/common';
 import { ValueError, ValueErrorIterator, ValueErrorType } from '@sinclair/typebox/errors';
+import { ValidatorType } from './decorators.js';
 
 export class TypeboxValidationException extends BadRequestException {
-    constructor(errors: ValueErrorIterator) {
+    constructor(type: ValidatorType, errors: ValueErrorIterator) {
         const topLevelErrors: ValueError[] = [];
         const unionPaths: string[] = [];
         for (const error of errors) {
@@ -16,7 +17,7 @@ export class TypeboxValidationException extends BadRequestException {
 
         super({
             statusCode: HttpStatus.BAD_REQUEST,
-            message: 'Validation failed',
+            message: `Validation failed (${type})`,
             errors: topLevelErrors,
         });
     }

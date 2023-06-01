@@ -1,40 +1,20 @@
-import { assignMetadata } from '@nestjs/common';
-import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants.js';
+import { assignMetadata, PipeTransform } from '@nestjs/common';
+import { ROUTE_ARGS_METADATA, PATH_METADATA } from '@nestjs/common/constants.js';
 import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
+import { ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
-import { Static, TSchema, TypeGuard } from '@sinclair/typebox';
-
-import { TypeboxDto } from './create-dto.js';
-import { isTypeboxDto } from './util.js';
+import { Static, TSchema, TypeGuard, TAny } from '@sinclair/typebox';
+import { coerceType } from './util.js';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 import { TypeboxValidationException } from './exceptions.js';
-import { TAny } from '@sinclair/typebox';
 
-export const Params = (): ParameterDecorator => {
-    return (target, key, index) => {
-        if (!key) return;
-        const args = Reflect.getMetadata(ROUTE_ARGS_METADATA, target.constructor, key) ?? {};
-        const [type] = Reflect.getMetadata('design:paramtypes', target, key) ?? [];
-        if (isTypeboxDto(type)) {
-            const objSchema = type.toJsonSchema();
-            if (objSchema.type === 'object') {
-                const parameters = Object.entries<Record<string, unknown>>(objSchema.properties).map(
-                    ([name, { description, examples, ...schema }]) => ({
-                        in: 'path',
-                        name,
-                        description,
-                        examples,
-                        schema,
-                        required: objSchema.required?.includes(name),
-                    })
-                );
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                Reflect.defineMetadata(DECORATORS.API_PARAMETERS, parameters, (target as any)[key]);
-            }
-        }
-        Reflect.defineMetadata(ROUTE_ARGS_METADATA, assignMetadata(args, RouteParamtypes.PARAM, index), target.constructor, key);
-    };
-};
+type Obj<T = unknown> = Record<string, T>;
+const isObj = (obj: unknown): obj is Obj => obj !== null && typeof obj === 'object';
+
+export type PathSegment = `/${string}`;
+export type PathRequiredParam = `:${string}`;
+export type PathOptionalParam = `?${string}`;
+export type PathParam = [...(PathRequiredParam | PathOptionalParam | PathSegment)[]];
 
 type MethodDecorator<T extends Function> = (
     target: Object,
@@ -44,78 +24,172 @@ type MethodDecorator<T extends Function> = (
 
 export type RespType<T extends TSchema> = Static<T> | Promise<Static<T>>;
 
-export interface SchemaValidator<T extends TSchema> {
+export interface SchemaValidator<T extends TSchema = TSchema> {
     schema: T;
+    name: string;
     check: TypeCheck<T>['Check'];
-    validate(data: unknown): Static<T>;
+    validate(data: Obj | Obj[]): Static<T>;
 }
 
-export function isSchemaValidator(type: any): type is SchemaValidator<TAny> {
+export type ValidatorType = 'response' | 'body' | 'query' | 'param';
+
+export interface ValidatorConfigBase<T extends ValidatorType = ValidatorType, S extends TSchema = TSchema> {
+    type: T;
+    schema: S;
+    coerceTypes?: boolean;
+    stripUnknownProps?: boolean;
+    schemaName?: string;
+    required?: boolean;
+}
+
+export interface ResponseValidatorConfig<S extends TSchema = TSchema> extends ValidatorConfigBase<'response', S> {
+    type: 'response';
+    responseCode?: number;
+}
+export interface ParamValidatorConfig<S extends TSchema = TSchema> extends ValidatorConfigBase<'param', S> {
+    name: string;
+}
+
+export type BodyValidatorConfig<S extends TSchema = TSchema> = ValidatorConfigBase<'body', S>;
+export interface QueryValidatorConfig<S extends TSchema = TSchema> extends ValidatorConfigBase<'query', S> {
+    name: string;
+}
+
+export type ValidatorConfig = ResponseValidatorConfig | ParamValidatorConfig | BodyValidatorConfig | QueryValidatorConfig;
+
+type MapToStatic<T extends ValidatorConfig[]> = {
+    [K in keyof T]: T[K]['required'] extends false ? Static<T[K]['schema']> | undefined : Static<T[K]['schema']>;
+};
+
+export function isSchemaValidator(type: any): type is SchemaValidator {
     return type && typeof type === 'object' && typeof type.validate === 'function';
 }
 
-export function buildSchemaValidator<T extends TSchema>(dtoOrSchema: TypeboxDto<T> | T): SchemaValidator<T> {
-    const schema = isTypeboxDto(dtoOrSchema) ? dtoOrSchema.typeboxSchema : dtoOrSchema;
+export function buildSchemaValidator(Config: ValidatorConfig): SchemaValidator {
+    const { type, schema, coerceTypes, stripUnknownProps, schemaName, required = true } = Config;
 
     if (!TypeGuard.TSchema(schema)) {
-        throw new Error('buildSchemaValidator expects a TypeBox schema or nestjs-typebox DTO class.');
+        throw new Error('ValidateResp expects a TypeBox schema or nestjs-typebox DTO class.');
     }
 
     const checker = TypeCompiler.Compile(schema);
 
     return {
         schema,
+        name: schemaName || schema.title || '',
         check: checker.Check,
-        validate(data: unknown) {
-            if (checker.Check(data)) return data;
-            throw new TypeboxValidationException(checker.Errors(data));
+        validate(dataOrArray: unknown) {
+            let jsonSchema: Obj;
+            let processedDataOrArray = dataOrArray;
+
+            if (coerceTypes || stripUnknownProps) {
+                let dataArray: unknown[];
+
+                if (Array.isArray(dataOrArray)) {
+                    jsonSchema = schema.items ?? {};
+                    dataArray = dataOrArray;
+                } else {
+                    jsonSchema = schema;
+                    dataArray = [dataOrArray];
+                }
+
+                const knownPropTypes = ((jsonSchema.anyOf ?? jsonSchema.allOf ?? [jsonSchema]) as Obj[]).reduce(
+                    (obj: Obj<string>, schema) => {
+                        for (const [prop, def] of Object.entries(schema.properties ?? {})) {
+                            obj[prop] = def && typeof def === 'object' && 'type' in def ? String(def.type) : 'unknown';
+                        }
+                        return obj;
+                    },
+                    {}
+                );
+
+                for (let i = 0; i < dataArray.length; i++) {
+                    const data = dataArray[i];
+                    if (isObj(data)) {
+                        const processedData = stripUnknownProps ? {} : data;
+                        for (const prop in data) {
+                            if (knownPropTypes[prop] === undefined) continue;
+
+                            if (stripUnknownProps) {
+                                processedData[prop] = data[prop];
+                            }
+
+                            if (coerceTypes) {
+                                processedData[prop] = coerceType(knownPropTypes[prop], data[prop]);
+                            }
+                        }
+                        dataArray[i] = processedData;
+                    } else if (coerceTypes && typeof jsonSchema.type === 'string') {
+                        dataArray[i] = coerceType(jsonSchema.type, data);
+                    }
+                }
+
+                processedDataOrArray = Array.isArray(dataOrArray) ? dataArray : dataArray[0];
+            }
+
+            if (processedDataOrArray === undefined && !required) {
+                return;
+            }
+
+            if (checker.Check(processedDataOrArray)) return processedDataOrArray;
+            throw new TypeboxValidationException(type, checker.Errors(processedDataOrArray));
         },
     };
 }
 
-export function ValidateResp<T extends TSchema, M extends (...args: any[]) => Promise<Static<T>> | Static<T>>(
-    dtoOrSchema: TypeboxDto<T> | T,
-    responseCode = 200
-): MethodDecorator<M> {
+export function Validate<
+    Response extends ResponseValidatorConfig,
+    Args extends ValidatorConfig[],
+    M extends (...args: [...MapToStatic<Args>, ...any[]]) => Promise<Static<Response['schema']>> | Static<Response['schema']>
+>(validatorConfigs: [Response, ...Args]): MethodDecorator<M> {
     return (target, key, descriptor) => {
-        const validator = buildSchemaValidator(dtoOrSchema);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Reflect.defineMetadata(DECORATORS.API_RESPONSE, { [responseCode]: { type: validator } }, (target as any)[key]);
+        let args = Reflect.getMetadata(ROUTE_ARGS_METADATA, target.constructor, key) ?? {};
+        validatorConfigs.forEach((validatorConfig, index) => {
+            const validator = buildSchemaValidator(validatorConfig);
+            const validatorPipe: PipeTransform = { transform: value => validator.validate(value) };
+
+            const { required = true, type, schema } = validatorConfig;
+
+            switch (type) {
+                case 'response': {
+                    const { responseCode } = validatorConfig;
+
+                    Reflect.defineMetadata(DECORATORS.API_RESPONSE, { [responseCode ?? 200]: { type: validator } }, (target as any)[key]);
+
+                    break;
+                }
+
+                case 'body': {
+                    args = assignMetadata(args, RouteParamtypes.BODY, index - 1, undefined, validatorPipe);
+                    Reflect.defineMetadata(ROUTE_ARGS_METADATA, args, target.constructor, key);
+                    ApiBody({ type: validator as any, required })(target, key, descriptor);
+
+                    break;
+                }
+
+                case 'param': {
+                    const { name } = validatorConfig;
+
+                    let path = Reflect.getMetadata(PATH_METADATA, target.constructor, key);
+                    console.log('path', path);
+
+                    args = assignMetadata(args, RouteParamtypes.PARAM, index - 1, name, validatorPipe);
+                    Reflect.defineMetadata(ROUTE_ARGS_METADATA, args, target.constructor, key);
+                    ApiParam({ name, schema, required })(target, key, descriptor);
+
+                    break;
+                }
+
+                case 'query': {
+                    const { name } = validatorConfig;
+
+                    args = assignMetadata(args, RouteParamtypes.QUERY, index - 1, name, validatorPipe);
+                    Reflect.defineMetadata(ROUTE_ARGS_METADATA, args, target.constructor, key);
+                    ApiQuery({ name, schema, required })(target, key, descriptor);
+                }
+            }
+        });
+
         return descriptor;
     };
 }
-
-/*
-export function ValidateResp<T extends TSchema>(
-    dtoOrSchema: TypeboxDto<T> | T,
-    responseCode?: number
-): (
-    target: Object,
-    propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<(...args: any[]) => Static<T>>
-) => TypedPropertyDescriptor<(...args: any[]) => Static<T>>;
-
-export function ValidateResp<S extends TSchema, T extends Promise<Static<S>>>(
-    dtoOrSchema: TypeboxDto<S> | S,
-    responseCode?: number
-): (
-    target: Object,
-    propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<(...args: any[]) => T>
-) => TypedPropertyDescriptor<(...args: any[]) => T>;
-
-export function ValidateResp<T extends TSchema>(
-    dtoOrSchema: TypeboxDto<T> | T,
-    responseCode = 200
-): (
-    target: Object,
-    propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<(...args: any[]) => any>
-) => TypedPropertyDescriptor<(...args: any[]) => any> {
-    return (target, key, descriptor) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Reflect.defineMetadata(DECORATORS.API_RESPONSE, { [responseCode]: { type: validator } }, (target as any)[key]);
-        return descriptor;
-    };
-}
-*/

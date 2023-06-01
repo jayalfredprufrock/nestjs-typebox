@@ -3,6 +3,14 @@
 This library provides helper utilities for writing and validating NestJS APIs using [TypeBox](https://github.com/sinclairzx81/typebox) as
 an alternative to class-validator/class-transformer. It also includes a patch for @nestjs/swagger allowing OpenAPI generation to continue working.
 
+> ### Warning
+> As of 2.x, this library is undergoing active development and will stabilize with the 3.x release. 
+> It was decided to drop support for the class-based DTO approach in favor of a pure decorator 
+> approach, since the class-based approach made it impossible to validate complex union types.
+
+
+## Installation
+
 ```sh
 npm i nestjs-typebox
 ```
