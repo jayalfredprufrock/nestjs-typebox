@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.3.0
+
+### Minor Changes
+
+-   c128d38: Upgrade typebox
+
 ## 2.2.0
 
 ### Minor Changes
