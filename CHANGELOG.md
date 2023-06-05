@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.4.0
+
+### Minor Changes
+
+-   f922327: separate response and request validator configuration
+
 ## 2.3.0
 
 ### Minor Changes
