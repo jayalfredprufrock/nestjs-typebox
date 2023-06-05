@@ -58,6 +58,8 @@ export interface BodyValidatorConfig extends ValidatorConfigBase {
 export type RequestValidatorConfig = ParamValidatorConfig | QueryValidatorConfig | BodyValidatorConfig;
 export type SchemaValidatorConfig = RequestValidatorConfig | ResponseValidatorConfig;
 
+export type ValidatorType = NonNullable<SchemaValidatorConfig['type']>;
+
 export interface ValidatorConfig<
     S extends TSchema,
     ResponseConfig extends ResponseValidatorConfig<S>,
