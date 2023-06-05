@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.4.1
+
+### Patch Changes
+
+-   87f3ccc: provide a default name for responses and body
+
 ## 2.4.0
 
 ### Minor Changes
