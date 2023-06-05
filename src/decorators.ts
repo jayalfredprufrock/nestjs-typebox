@@ -5,11 +5,11 @@ import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants.js';
 import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
 import { ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
-import { Static, TSchema, Type, TypeGuard } from '@sinclair/typebox';
+import { Static, TSchema, TypeGuard } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 
 import { TypeboxValidationException } from './exceptions.js';
-import { coerceType } from './util.js';
+import { coerceType, ucFirst } from './util.js';
 
 type Obj<T = unknown> = Record<string, T>;
 const isObj = (obj: unknown): obj is Obj => obj !== null && typeof obj === 'object';
@@ -172,20 +172,28 @@ export function Validate<
 
         const { response: responseValidatorConfig, request: requestValidatorConfigs } = validatorConfig;
 
+        const methodName = ucFirst(String(key));
+
         if (responseValidatorConfig) {
             const validatorConfig: ResponseValidatorConfig = TypeGuard.TSchema(responseValidatorConfig)
                 ? { schema: responseValidatorConfig }
                 : responseValidatorConfig;
 
-            const { responseCode = 200, required = true, stripUnknownProps = true, ...config } = validatorConfig;
-            const validator = buildSchemaValidator({ ...config, required, stripUnknownProps, type: 'response' });
+            const {
+                responseCode = 200,
+                required = true,
+                stripUnknownProps = true,
+                name = `${methodName}Response`,
+                ...config
+            } = validatorConfig;
+            const validator = buildSchemaValidator({ ...config, required, stripUnknownProps, name, type: 'response' });
             Reflect.defineMetadata(DECORATORS.API_RESPONSE, { [responseCode]: { type: validator } }, (target as any)[key]);
         }
 
         requestValidatorConfigs?.forEach((validatorConfig, index) => {
             switch (validatorConfig.type) {
                 case 'body': {
-                    const { required = true, name = String(key), ...config } = validatorConfig;
+                    const { required = true, name = `${methodName}Body`, ...config } = validatorConfig;
                     const validator = buildSchemaValidator({ ...config, name, required } as SchemaValidatorConfig);
                     const validatorPipe: PipeTransform = { transform: value => validator.validate(value) };
 
@@ -222,21 +230,4 @@ export function Validate<
 
         return descriptor;
     };
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-class Test {
-    @Validate({
-        response: {
-            schema: Type.Number(),
-        },
-        request: [
-            { type: 'query', name: 'id', schema: Type.Number() },
-            { type: 'param', name: 'status', schema: Type.Number() },
-        ],
-    })
-    getJobs(id: number, status: number) {
-        console.log(status);
-        return id;
-    }
 }

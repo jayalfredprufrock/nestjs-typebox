@@ -28,3 +28,7 @@ export const coerceType = (type: string, val: unknown): unknown => {
             return val;
     }
 };
+
+export const ucFirst = (str: string): string => {
+    return str[0].toUpperCase() + str.slice(1);
+};
