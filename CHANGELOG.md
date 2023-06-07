@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.5.0
+
+### Minor Changes
+
+-   4ec4c58: Automatically apply interceptor. New HttpEndpoint decorator
+
 ## 2.4.1
 
 ### Patch Changes
