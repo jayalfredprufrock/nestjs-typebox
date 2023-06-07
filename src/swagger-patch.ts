@@ -1,5 +1,6 @@
 import { Type as NestType } from '@nestjs/common';
 import { SchemaObjectFactory } from '@nestjs/swagger/dist/services/schema-object-factory.js';
+
 import { isSchemaValidator } from './decorators.js';
 
 export function patchNestJsSwagger() {

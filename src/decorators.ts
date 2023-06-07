@@ -1,20 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
-import { assignMetadata, PipeTransform } from '@nestjs/common';
-import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants.js';
+import { applyDecorators, assignMetadata, Delete, Get, HttpCode, Patch, PipeTransform, Post, Put } from '@nestjs/common';
+import { INTERCEPTORS_METADATA, ROUTE_ARGS_METADATA } from '@nestjs/common/constants.js';
 import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
-import { ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { extendArrayMetadata } from '@nestjs/common/utils/extend-metadata.util.js';
+import { ApiBody, ApiOperation, ApiOperationOptions, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
 import { Static, TSchema, TypeGuard } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 
 import { TypeboxValidationException } from './exceptions.js';
+import { TypeboxTransformInterceptor } from './interceptors.js';
 import { coerceType, ucFirst } from './util.js';
 
 type Obj<T = unknown> = Record<string, T>;
 const isObj = (obj: unknown): obj is Obj => obj !== null && typeof obj === 'object';
 
-type MethodDecorator<T extends Function> = (
+export type MethodDecorator<T extends Function = any> = (
     target: Object,
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<T>
@@ -69,7 +71,7 @@ export interface ValidatorConfig<
     request?: [...RequestConfigs];
 }
 
-type RequestConfigsToTypes<RequestConfigs extends RequestValidatorConfig[]> = {
+export type RequestConfigsToTypes<RequestConfigs extends RequestValidatorConfig[]> = {
     [K in keyof RequestConfigs]: RequestConfigs[K]['required'] extends false
         ? Static<RequestConfigs[K]['schema']> | undefined
         : Static<RequestConfigs[K]['schema']>;
@@ -170,6 +172,8 @@ export function Validate<
     return (target, key, descriptor) => {
         let args = Reflect.getMetadata(ROUTE_ARGS_METADATA, target.constructor, key) ?? {};
 
+        extendArrayMetadata(INTERCEPTORS_METADATA, [TypeboxTransformInterceptor], descriptor.value as any);
+
         const { response: responseValidatorConfig, request: requestValidatorConfigs } = validatorConfig;
 
         const methodName = ucFirst(String(key));
@@ -231,3 +235,67 @@ export function Validate<
         return descriptor;
     };
 }
+
+const nestHttpDecoratorMap = {
+    GET: Get,
+    POST: Post,
+    PATCH: Patch,
+    DELETE: Delete,
+    PUT: Put,
+};
+
+export interface HttpEndpointDecoratorConfig<
+    S extends TSchema = TSchema,
+    ResponseConfig extends ResponseValidatorConfig<S> = ResponseValidatorConfig<S>,
+    RequestConfigs extends RequestValidatorConfig[] = RequestValidatorConfig[]
+> extends Omit<ApiOperationOptions, 'requestBody' | 'parameters'> {
+    method: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT';
+    responseCode?: number;
+    path?: string;
+    validate?: ValidatorConfig<S, ResponseConfig, RequestConfigs>;
+}
+
+export const HttpEndpoint = <
+    S extends TSchema,
+    ResponseConfig extends Omit<ResponseValidatorConfig<S>, 'responseCode'>,
+    RequestConfigs extends RequestValidatorConfig[],
+    MethodDecoratorType extends (
+        ...args: [...RequestConfigsToTypes<RequestConfigs>, ...any[]]
+    ) => Promise<Static<ResponseConfig['schema']>> | Static<ResponseConfig['schema']>
+>(
+    config: HttpEndpointDecoratorConfig<S, ResponseConfig, RequestConfigs>
+): MethodDecorator<MethodDecoratorType> => {
+    const { method, responseCode = 200, path, validate, ...apiOperationOptions } = config;
+
+    const decorators: MethodDecorator[] = [ApiOperation(apiOperationOptions)];
+
+    decorators.push(HttpCode(responseCode));
+
+    if (validate) {
+        if (path && validate.request) {
+            const pathParams = path
+                .split('/')
+                .filter(seg => seg.startsWith(':'))
+                .map(seg => ({ name: seg.replace(/^:(.*)\\?$/, '$1'), required: !seg.endsWith('?') }));
+
+            for (const pathParam of pathParams) {
+                const paramValidator = validate.request.find(v => v.name === pathParam.name);
+                if (!paramValidator) {
+                    throw new Error(`Path param "${pathParam.name}" is missing a request validator.`);
+                }
+                if (paramValidator.required === false && pathParam.required === true) {
+                    throw new Error(`Optional path param "${pathParam.name}" is required in validator.`);
+                }
+            }
+
+            const missingPathParam = validate.request.find(v => v.type === 'param' && !pathParams.some(p => p.name == v.name));
+            if (missingPathParam) {
+                throw new Error(`Request validator references non-existent path parameter "${missingPathParam.name}".`);
+            }
+        }
+
+        decorators.push(Validate(validate));
+    }
+
+    return applyDecorators(...decorators, nestHttpDecoratorMap[method](path));
+};
