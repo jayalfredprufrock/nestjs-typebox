@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.5.2
+
+### Patch Changes
+
+-   5afcaba: remove useless generic
+
 ## 2.5.1
 
 ### Patch Changes
