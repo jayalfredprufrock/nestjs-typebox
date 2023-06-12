@@ -6,7 +6,7 @@ import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
 import { extendArrayMetadata } from '@nestjs/common/utils/extend-metadata.util.js';
 import { ApiBody, ApiOperation, ApiOperationOptions, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
-import { Static, TSchema, TString, Type, TypeGuard } from '@sinclair/typebox';
+import { Static, TSchema, Type, TypeGuard } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 
 import { TypeboxValidationException } from './exceptions.js';
@@ -28,36 +28,36 @@ export interface SchemaValidator<T extends TSchema = TSchema> {
     check: TypeCheck<T>['Check'];
     validate(data: Obj | Obj[]): Static<T>;
 }
-export interface ValidatorConfigBase<T extends TSchema = TSchema> {
-    schema?: T;
+export interface ValidatorConfigBase {
+    schema?: TSchema;
     coerceTypes?: boolean;
     stripUnknownProps?: boolean;
     name?: string;
     required?: boolean;
 }
-export interface ResponseValidatorConfig<T extends TSchema = TSchema> extends ValidatorConfigBase<T> {
+export interface ResponseValidatorConfig<T extends TSchema = TSchema> extends ValidatorConfigBase {
     schema: T;
     type?: 'response';
     responseCode?: number;
     required?: true;
 }
 
-export interface ParamValidatorConfig<T extends TSchema = TString> extends ValidatorConfigBase<T> {
-    schema?: T;
+export interface ParamValidatorConfig extends ValidatorConfigBase {
+    schema?: TSchema;
     type: 'param';
     name: string;
     stripUnknownProps?: never;
 }
 
-export interface QueryValidatorConfig<T extends TSchema = TString> extends ValidatorConfigBase<T> {
-    schema?: T;
+export interface QueryValidatorConfig extends ValidatorConfigBase {
+    schema?: TSchema;
     type: 'query';
     name: string;
     stripUnknownProps?: never;
 }
 
-export interface BodyValidatorConfig<T extends TSchema = TSchema> extends ValidatorConfigBase<T> {
-    schema: T;
+export interface BodyValidatorConfig extends ValidatorConfigBase {
+    schema: TSchema;
     type: 'body';
 }
 
