@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.5.1
+
+### Patch Changes
+
+-   6f85747: Make schema optional for param and query validators
+
 ## 2.5.0
 
 ### Minor Changes
