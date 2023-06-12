@@ -6,7 +6,7 @@ import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
 import { extendArrayMetadata } from '@nestjs/common/utils/extend-metadata.util.js';
 import { ApiBody, ApiOperation, ApiOperationOptions, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
-import { Static, TSchema, TypeGuard } from '@sinclair/typebox';
+import { Static, TSchema, TString, Type, TypeGuard } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 
 import { TypeboxValidationException } from './exceptions.js';
@@ -29,31 +29,35 @@ export interface SchemaValidator<T extends TSchema = TSchema> {
     validate(data: Obj | Obj[]): Static<T>;
 }
 export interface ValidatorConfigBase<T extends TSchema = TSchema> {
-    schema: T;
+    schema?: T;
     coerceTypes?: boolean;
     stripUnknownProps?: boolean;
     name?: string;
     required?: boolean;
 }
 export interface ResponseValidatorConfig<T extends TSchema = TSchema> extends ValidatorConfigBase<T> {
+    schema: T;
     type?: 'response';
     responseCode?: number;
     required?: true;
 }
 
-export interface ParamValidatorConfig extends ValidatorConfigBase {
+export interface ParamValidatorConfig<T extends TSchema = TString> extends ValidatorConfigBase<T> {
+    schema?: T;
     type: 'param';
     name: string;
     stripUnknownProps?: never;
 }
 
-export interface QueryValidatorConfig extends ValidatorConfigBase {
+export interface QueryValidatorConfig<T extends TSchema = TString> extends ValidatorConfigBase<T> {
+    schema?: T;
     type: 'query';
     name: string;
     stripUnknownProps?: never;
 }
 
-export interface BodyValidatorConfig extends ValidatorConfigBase {
+export interface BodyValidatorConfig<T extends TSchema = TSchema> extends ValidatorConfigBase<T> {
+    schema: T;
     type: 'body';
 }
 
@@ -73,8 +77,12 @@ export interface ValidatorConfig<
 
 export type RequestConfigsToTypes<RequestConfigs extends RequestValidatorConfig[]> = {
     [K in keyof RequestConfigs]: RequestConfigs[K]['required'] extends false
-        ? Static<RequestConfigs[K]['schema']> | undefined
-        : Static<RequestConfigs[K]['schema']>;
+        ? RequestConfigs[K]['schema'] extends TSchema
+            ? Static<RequestConfigs[K]['schema']> | undefined
+            : string | undefined
+        : RequestConfigs[K]['schema'] extends TSchema
+        ? Static<RequestConfigs[K]['schema']>
+        : string;
 };
 
 export function isSchemaValidator(type: any): type is SchemaValidator {
@@ -209,8 +217,8 @@ export function Validate<
                 }
 
                 case 'param': {
-                    const { required = true, coerceTypes = true, ...config } = validatorConfig;
-                    const validator = buildSchemaValidator({ ...config, coerceTypes, required } as SchemaValidatorConfig);
+                    const { required = true, coerceTypes = true, schema = Type.String(), ...config } = validatorConfig;
+                    const validator = buildSchemaValidator({ ...config, coerceTypes, required, schema } as SchemaValidatorConfig);
                     const validatorPipe: PipeTransform = { transform: value => validator.validate(value) };
 
                     args = assignMetadata(args, RouteParamtypes.PARAM, index, validatorConfig.name, validatorPipe);
@@ -221,8 +229,8 @@ export function Validate<
                 }
 
                 case 'query': {
-                    const { required = false, coerceTypes = true, ...config } = validatorConfig;
-                    const validator = buildSchemaValidator({ ...config, required, coerceTypes } as SchemaValidatorConfig);
+                    const { required = false, coerceTypes = true, schema = Type.String(), ...config } = validatorConfig;
+                    const validator = buildSchemaValidator({ ...config, coerceTypes, required, schema } as SchemaValidatorConfig);
                     const validatorPipe: PipeTransform = { transform: value => validator.validate(value) };
 
                     args = assignMetadata(args, RouteParamtypes.QUERY, index, validatorConfig.name, validatorPipe);
@@ -267,9 +275,7 @@ export const HttpEndpoint = <
 ): MethodDecorator<MethodDecoratorType> => {
     const { method, responseCode = 200, path, validate, ...apiOperationOptions } = config;
 
-    const decorators: MethodDecorator[] = [ApiOperation(apiOperationOptions)];
-
-    decorators.push(HttpCode(responseCode));
+    const decorators: MethodDecorator[] = [nestHttpDecoratorMap[method](path), HttpCode(responseCode), ApiOperation(apiOperationOptions)];
 
     if (validate) {
         if (path && validate.request) {
@@ -297,5 +303,5 @@ export const HttpEndpoint = <
         decorators.push(Validate(validate));
     }
 
-    return applyDecorators(...decorators, nestHttpDecoratorMap[method](path));
+    return applyDecorators(...decorators);
 };

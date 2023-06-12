@@ -4,10 +4,10 @@ This library provides helper utilities for writing and validating NestJS APIs us
 an alternative to class-validator/class-transformer. It also includes a patch for @nestjs/swagger allowing OpenAPI generation to continue working.
 
 > ### Warning
-> As of 2.x, this library is undergoing active development and will stabilize with the 3.x release. 
-> It was decided to drop support for the class-based DTO approach in favor of a pure decorator 
+>
+> As of 2.x, this library is undergoing active development and will stabilize with the 3.x release.
+> It was decided to drop support for the class-based DTO approach in favor of a pure decorator
 > approach, since the class-based approach made it impossible to validate complex union types.
-
 
 ## Installation
 
@@ -131,3 +131,6 @@ Swagger patch derived from https://github.com/risenforces/nestjs-zod
 -   RespValidate observable support
 -   Extract logic out of DTO creator so validation observables can also take regular typebox schemas
 -   Add note about Dto "any" behavior for non-object schemas (i.e. unions) (A class can only implement an object type or intersection of object types with statically known members)
+
+-   utility to create typebox schema for response/create/update (i.e. SchemaName['response'], SchemaName['update'])
+-   include method name in decorator errors
