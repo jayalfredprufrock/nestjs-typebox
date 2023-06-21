@@ -12,7 +12,7 @@ an alternative to class-validator/class-transformer. It also includes a patch fo
 ## Installation
 
 ```sh
-npm i nestjs-typebox
+npm i nestjs-typebox @sinclair/typebox
 ```
 
 ## Usage
