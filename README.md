@@ -17,7 +17,129 @@ npm i nestjs-typebox
 
 ## Usage
 
-### 1. Apply patches, install global interceptor and pipe
+### 1. Create TypeBox schema
+
+> The example below demonstrates a discriminated union type, which was previously incompatible with
+> the class-based DTO approach used in v1. JSON schema fields like "description" will be parsed by the Swagger generator.
+
+```ts
+import { Type } from '@sinclair/typebox';
+
+export const PetSchemaBase = Type.Object({
+    id: Type.Number(),
+    name: Type.String({
+        description: "The pet's name",
+        examples: ['Figaro'],
+    }),
+    microchip: Type.String(){
+        description: 'Secret microchip number. Not sent to client'
+    },
+});
+
+export const CatSchema = Type.Composite([
+    PetSchemaBase,
+    Type.Object({
+        type: Type.Literal('cat'),
+        breed: Type.Union([Type.Literal('shorthair'), Type.Literal('persian'), Type.Literal('siamese')]),
+    }),
+]);
+
+export const DogSchema = Type.Composite([
+    PetSchemaBase,
+    Type.Object({
+        type: Type.Literal('dog'),
+        breed: Type.Union([Type.Literal('shiba-inu'), Type.Literal('poodle'), Type.Literal('dachshund')]),
+    }),
+]);
+
+export const PetSchema = Type.Union([CatSchema, DogSchema]);
+export type Pet = Static<typeof PetSchema>;
+```
+
+### 2. Decorate controller methods
+
+> The example below shows two different decorators and their usage, calling out default configuration.
+> Schemas have all been defined inline for brevity, but could just as easily be defined elsewhere
+> and reused. The primary benefit of using @HttpEndpoint over @Validator is the additional validation
+> enforcing path parameters to be properly defined as request "param" validators.
+
+```ts
+import { Type } from '@sinclair/typebox';
+import { Validate, HttpEndpoint } from 'nestjs-typebox';
+
+@Controller('pets')
+export class PetController {
+    constructor(private readonly petService: PetService) {}
+
+    @Get()
+    @Validate({
+        response: { schema: Type.Array(Type.Omit(PetSchema, ['microchip'])), stripUnknownProps: true },
+    })
+    async getPets() {
+        return this.petService.getPets();
+    }
+
+    @Get(':id')
+    @Validate({
+        // stripUnknownProps is true by default for response validators
+        // so this shorthand is equivalent
+        response: Type.Omit(PetSchema, ['microchip']),
+        request: [
+            // coerceTypes is true by default for "param" and "query" request validators
+            { name: 'id', type: 'param', schema: Type.Number(), coerceTypes: true },
+        ],
+    })
+    // no need to use @Param() decorator here since the @Validate() decorator will
+    // automatically attach a pipe to populate and convert the paramater value
+    async getPet(id: number) {
+        return this.petService.getPet(id);
+    }
+
+    @Post()
+    @Validate({
+        response: Type.Omit(PetSchema, ['microchip']),
+        request: [
+            // if "name" not provided, method name will be used
+            { type: 'body', schema: Type.Omit(PetSchema, 'id') },
+        ],
+    })
+    async createPet(data: Omit<Pet, 'id'>) {
+        return this.petService.createPet(data);
+    }
+
+    @HttpEndpoint({
+        method: 'PATCH',
+        path: ':id',
+        response: Type.Omit(PetSchema, ['microchip']),
+        request: [
+            { name: 'id', type: 'param', schema: Type.Number() },
+            { type: 'body', schema: Type.Partial(Type.Omit(PetSchema, ['id'])) },
+        ],
+    })
+    // the order of the controller method parameters must correspond to the order/types of
+    // "request" validators, including "required" configuration. Additionally nestjs-typebox will
+    // throw at bootup if parameters defined in the "request" validator config don't correspond
+    // with the parameters defined in the "path" configuration
+    async updatePet(id: number, data: Partial<Omit<Pet, 'id'>>) {
+        return this.petService.updatePet(id, data);
+    }
+
+    @HttpEndpoint({
+        method: 'DELETE',
+        path: ':id',
+        response: Type.Omit(PetSchema, ['microchip']),
+        request: [{ name: 'id', type: 'param', schema: Type.Number() }],
+    })
+    async deletePet(id: number) {
+        return this.petService.deletePet(id);
+    }
+}
+```
+
+### 3. Apply patch for OpenAPI/Swagger Support
+
+> As of 2.x, it is no longer necessary to register any interceptors/pipes,
+> global or otherwise.
 
 ```ts
 // main.ts
@@ -35,90 +157,11 @@ applyFormats();
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
-    // NOTE: registering global pipes/interceptors via app.module.ts is preferred
-    // The following is included here for brevity:
-
-    // provides request validation
-    app.useGlobalPipes(new TypeboxValidationPipe());
-
-    // provides response validation and transformation
-    app.useGlobalInterceptors(new TypeboxTransformInterceptor(app.get(Reflector)));
-
     await app.listen(3000);
     console.log(`Application is running on: ${await app.getUrl()}`);
 }
 
 bootstrap();
-```
-
-### 2. Create TypeBox schema
-
-```ts
-import { Type } from '@sinclair/typebox';
-
-export const CatSchema = Type.Object({
-    id: Type.Number({
-        description: 'The unique identifier',
-        examples: [42],
-    }),
-    name: Type.String({
-        description: 'The name of the cat.',
-        examples: ['Figaro'],
-    }),
-    type: Type.Union([Type.Literal('tabby'), Type.Literal('short-hair'), Type.Literal('maine-coon'), Type.Literal('siamese')]),
-});
-```
-
-### 3. Create DTOs
-
-```ts
-import { Type } from '@sinclair/typebox';
-import { createTypeboxDto } from 'nestjs-typebox';
-
-export class CatParamsDto extends createTypeboxDto(Type.Pick(CatSchema, ['id']), { coerceTypes: true }) {}
-
-export class CatCreateDto extends createTypeboxDto(Type.Omit(CatSchema, ['id'])) {}
-
-export class CatUpdateDto extends createTypeboxDto(Type.Partial(Type.Omit(CatSchema, ['id', 'type']))) {}
-
-export class CatResponseDto extends createTypeboxDto(CatSchema) {}
-```
-
-### 4. Reference DTOs in Controller Methods
-
-```ts
-import { Params } from 'nestjs-typebox';
-
-@Controller('cats')
-export class CatController {
-
-    constructor(private catService: CatService) {}
-
-    @Get()
-    async getCats(): Promise<CatResponseDto[]> {
-        return this.catService.getCats();
-    }
-
-    @Get(':id')
-    async getCat(@Params() params: CatParamsDto): Promise<CatResponseDto> {
-        return this.catService.getCat(params.id);
-    }
-
-    @Post()
-    async createCat(@Body() data: CatCreateDto): Promise<CatResponseDto> {
-        return this.catService.createCat(data);
-    }
-
-    @Patch(':id')
-    async updateCat(@Params() params: CatParamsDto, @Body() data: CatUpdateDto): Promise<CatResponseDto> {
-        return this.catService.updateCat(params.id, data);
-    }
-
-    @Delete(':id)
-    async deleteCat(@Params() params: CatParamsDto): Promise<CatResponseDto> {
-        return this.catService.deleteCat(params.id);
-    }
-}
 ```
 
 ### Credits
@@ -127,10 +170,6 @@ Swagger patch derived from https://github.com/risenforces/nestjs-zod
 
 ### Todo
 
--   Check for parameter mapping at boot time and throw
--   RespValidate observable support
--   Extract logic out of DTO creator so validation observables can also take regular typebox schemas
--   Add note about Dto "any" behavior for non-object schemas (i.e. unions) (A class can only implement an object type or intersection of object types with statically known members)
-
--   utility to create typebox schema for response/create/update (i.e. SchemaName['response'], SchemaName['update'])
+-   Validate observable support
+-   utility to create typebox schemas with CRUD defaults (i.e. SchemaName['response'], SchemaName['update'])
 -   include method name in decorator errors
