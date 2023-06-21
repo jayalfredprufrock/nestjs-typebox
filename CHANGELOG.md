@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.5.3
+
+### Patch Changes
+
+-   74357c3: chore: updated readme with decorator usage
+
 ## 2.5.2
 
 ### Patch Changes
