@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.5.4
+
+### Patch Changes
+
+-   50afcd1: updated peer dep range to support nest 10
+
 ## 2.5.3
 
 ### Patch Changes
