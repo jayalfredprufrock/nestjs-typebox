@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.6.1
+
+### Patch Changes
+
+-   fc130b1: fix: support for passing pipe classes without instantiation
+
 ## 2.6.0
 
 ### Minor Changes
