@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
-import { applyDecorators, assignMetadata, Delete, Get, HttpCode, Patch, PipeTransform, Post, Put } from '@nestjs/common';
+import { applyDecorators, assignMetadata, Delete, Get, HttpCode, Patch, PipeTransform, Post, Put, Type as NestType } from '@nestjs/common';
 import { INTERCEPTORS_METADATA, ROUTE_ARGS_METADATA } from '@nestjs/common/constants.js';
 import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
 import { extendArrayMetadata } from '@nestjs/common/utils/extend-metadata.util.js';
@@ -34,7 +34,7 @@ export interface ValidatorConfigBase {
     stripUnknownProps?: boolean;
     name?: string;
     required?: boolean;
-    pipes?: PipeTransform[];
+    pipes?: (PipeTransform | NestType<PipeTransform>)[];
 }
 export interface ResponseValidatorConfig<T extends TSchema = TSchema> extends ValidatorConfigBase {
     schema: T;
