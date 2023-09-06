@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 2.6.0
+
+### Minor Changes
+
+-   97e4c28: feat: transform pipe support for request validators
+
 ## 2.5.5
 
 ### Patch Changes
