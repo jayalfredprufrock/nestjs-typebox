@@ -1,4 +1,5 @@
 import type { PipeTransform, Type } from '@nestjs/common';
+import { ApiOperationOptions } from '@nestjs/swagger';
 import type { Static, TSchema } from '@sinclair/typebox';
 import type { TypeCheck } from '@sinclair/typebox/compiler';
 
@@ -13,6 +14,17 @@ export type MethodDecorator<T extends Function = any> = (
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<T>
 ) => TypedPropertyDescriptor<T> | void;
+
+export interface HttpEndpointDecoratorConfig<
+    S extends TSchema = TSchema,
+    ResponseConfig extends ResponseValidatorConfig<S> = ResponseValidatorConfig<S>,
+    RequestConfigs extends RequestValidatorConfig[] = RequestValidatorConfig[],
+> extends Omit<ApiOperationOptions, 'requestBody' | 'parameters'> {
+    method: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT';
+    responseCode?: number;
+    path?: string;
+    validate?: ValidatorConfig<S, ResponseConfig, RequestConfigs>;
+}
 
 export interface SchemaValidator<T extends TSchema = TSchema> {
     schema: T;

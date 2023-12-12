@@ -2,7 +2,7 @@ import { applyDecorators, assignMetadata, Delete, Get, HttpCode, Patch, PipeTran
 import { INTERCEPTORS_METADATA, ROUTE_ARGS_METADATA } from '@nestjs/common/constants.js';
 import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
 import { extendArrayMetadata } from '@nestjs/common/utils/extend-metadata.util.js';
-import { ApiBody, ApiOperation, ApiOperationOptions, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
 import { Static, TSchema, Type, TypeGuard } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
@@ -10,6 +10,7 @@ import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { TypeboxValidationException } from './exceptions.js';
 import { TypeboxTransformInterceptor } from './interceptors.js';
 import type {
+    HttpEndpointDecoratorConfig,
     MethodDecorator,
     Obj,
     RequestConfigsToTypes,
@@ -195,17 +196,6 @@ const nestHttpDecoratorMap = {
     DELETE: Delete,
     PUT: Put,
 };
-
-export interface HttpEndpointDecoratorConfig<
-    S extends TSchema = TSchema,
-    ResponseConfig extends ResponseValidatorConfig<S> = ResponseValidatorConfig<S>,
-    RequestConfigs extends RequestValidatorConfig[] = RequestValidatorConfig[],
-> extends Omit<ApiOperationOptions, 'requestBody' | 'parameters'> {
-    method: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT';
-    responseCode?: number;
-    path?: string;
-    validate?: ValidatorConfig<S, ResponseConfig, RequestConfigs>;
-}
 
 export const HttpEndpoint = <
     S extends TSchema,
