@@ -1,7 +1,7 @@
 import { BadRequestException, HttpStatus } from '@nestjs/common';
 import { ValueError, ValueErrorIterator, ValueErrorType } from '@sinclair/typebox/errors';
 
-import { ValidatorType } from './decorators.js';
+import type { ValidatorType } from './types.js';
 
 export class TypeboxValidationException extends BadRequestException {
     constructor(type: ValidatorType, errors: ValueErrorIterator) {
