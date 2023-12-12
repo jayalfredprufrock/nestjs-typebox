@@ -173,3 +173,5 @@ Swagger patch derived from https://github.com/risenforces/nestjs-zod
 -   Validate observable support
 -   utility to create typebox schemas with CRUD defaults (i.e. SchemaName['response'], SchemaName['update'])
 -   include method name in decorator errors
+-   support validating entire query object? (instead of individual values)
+-   check controller metadata so resolved path can include params specified at the controller level

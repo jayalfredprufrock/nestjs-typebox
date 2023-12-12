@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "nestjs-typebox": "2.6.1"
+  },
+  "changesets": []
+}

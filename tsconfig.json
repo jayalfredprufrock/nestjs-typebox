@@ -2,7 +2,7 @@
     "compilerOptions": {
         "lib": ["es2022"],
         "target": "es2022",
-        "module": "CommonJS",
+        "module": "NodeNext",
         "moduleResolution": "nodenext",
         "declaration": true,
         "emitDecoratorMetadata": true,
