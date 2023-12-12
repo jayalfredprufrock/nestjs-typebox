@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.0.0-next.1
+
+### Patch Changes
+
+- 56c4916: fix: simplify DistOmit and DistPick typings for better inference
+
 ## 3.0.0-next.0
 
 ### Major Changes

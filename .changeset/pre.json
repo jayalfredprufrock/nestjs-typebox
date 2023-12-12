@@ -5,6 +5,7 @@
     "nestjs-typebox": "2.6.1"
   },
   "changesets": [
-    "famous-countries-fail"
+    "famous-countries-fail",
+    "sixty-clocks-thank"
   ]
 }
