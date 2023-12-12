@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.0.0-next.2
+
+### Patch Changes
+
+- ff46411: feat: add some more typebox utilities
+
 ## 3.0.0-next.1
 
 ### Patch Changes
