@@ -4,5 +4,7 @@
   "initialVersions": {
     "nestjs-typebox": "2.6.1"
   },
-  "changesets": []
+  "changesets": [
+    "famous-countries-fail"
+  ]
 }
