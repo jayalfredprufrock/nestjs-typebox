@@ -1,6 +1,6 @@
 import type { PipeTransform, Type } from '@nestjs/common';
+import type { Static, TSchema } from '@sinclair/typebox';
 import type { TypeCheck } from '@sinclair/typebox/compiler';
-import type { Static, TSchema } from '@sinclair/typebox/type';
 
 export type AllKeys<T> = T extends unknown ? Exclude<keyof T, symbol> : never;
 

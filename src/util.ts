@@ -1,4 +1,4 @@
-import { Static, TLiteral, TLiteralValue, TSchema, TUnion, Type } from '@sinclair/typebox/type';
+import { Static, TLiteral, TSchema, TUnion, Type } from '@sinclair/typebox/type';
 
 import { AllKeys, Obj } from './types.js';
 
@@ -39,24 +39,14 @@ export const capitalize = <S extends string>(str: S): Capitalize<S> => {
 
 export const isObj = (obj: unknown): obj is Obj => obj !== null && typeof obj === 'object';
 
-export const LiteralUnion = <V extends TLiteralValue[]>(values: readonly [...V]) => {
+export const LiteralUnion = <V extends (number | string)[]>(values: readonly [...V]) => {
     return Type.Union(values.map(value => Type.Literal(value))) as TUnion<{ [I in keyof V]: TLiteral<V[I]> }>;
 };
 
 export const DistOmit = <T extends TSchema, K extends AllKeys<Static<T>>[]>(schema: T, keys: readonly [...K]) => {
-    return Type.Extends(
-        schema,
-        Type.Unknown(),
-        Type.Omit(schema, Type.Union(keys.map(key => Type.Literal(key as TLiteralValue))) as TUnion<{ [I in keyof K]: TLiteral<K[I]> }>),
-        Type.Never()
-    );
+    return Type.Extends(schema, Type.Unknown(), Type.Omit(schema, keys), Type.Never());
 };
 
 export const DistPick = <T extends TSchema, K extends AllKeys<Static<T>>[]>(schema: T, keys: readonly [...K]) => {
-    return Type.Extends(
-        schema,
-        Type.Unknown(),
-        Type.Pick(schema, Type.Union(keys.map(key => Type.Literal(key as TLiteralValue))) as TUnion<{ [I in keyof K]: TLiteral<K[I]> }>),
-        Type.Never()
-    );
+    return Type.Extends(schema, Type.Unknown(), Type.Pick(schema, keys), Type.Never());
 };
