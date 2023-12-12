@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.0.0-next.3
+
+### Patch Changes
+
+- 163be99: fix: export types
+
 ## 3.0.0-next.2
 
 ### Patch Changes
