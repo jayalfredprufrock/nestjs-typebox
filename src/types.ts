@@ -1,6 +1,6 @@
 import type { PipeTransform, Type } from '@nestjs/common';
 import { ApiOperationOptions } from '@nestjs/swagger';
-import type { Static, TSchema } from '@sinclair/typebox';
+import type { Static, TComposite, TOmit, TPartial, TPick, TSchema } from '@sinclair/typebox';
 import type { TypeCheck } from '@sinclair/typebox/compiler';
 
 export type AllKeys<T> = T extends unknown ? Exclude<keyof T, symbol> : never;
@@ -90,3 +90,5 @@ export type RequestConfigsToTypes<RequestConfigs extends RequestValidatorConfig[
           ? Static<RequestConfigs[K]['schema']>
           : string;
 };
+
+export type TPartialSome<T extends TSchema, K extends PropertyKey[]> = TComposite<[TOmit<T, K>, TPartial<TPick<T, K>>]>;
