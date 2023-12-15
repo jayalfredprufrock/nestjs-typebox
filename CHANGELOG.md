@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.0.0-next.4
+
+### Patch Changes
+
+- 7a0a776: Add UnionPartialSome typebox helper
+
 ## 3.0.0-next.3
 
 ### Patch Changes
