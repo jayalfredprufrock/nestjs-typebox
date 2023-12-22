@@ -61,7 +61,8 @@ export type Pet = Static<typeof PetSchema>;
 > The example below shows two different decorators and their usage, calling out default configuration.
 > Schemas have all been defined inline for brevity, but could just as easily be defined elsewhere
 > and reused. The primary benefit of using @HttpEndpoint over @Validator is the additional validation
-> enforcing path parameters to be properly defined as request "param" validators.
+> enforcing path parameters to be properly defined as request "param" validators. Otherwise, it simply
+> passes through options specified in `validate` to the underlying @Validator decorator.
 
 ```ts
 import { Type } from '@sinclair/typebox';
@@ -110,11 +111,13 @@ export class PetController {
     @HttpEndpoint({
         method: 'PATCH',
         path: ':id',
-        response: Type.Omit(PetSchema, ['microchip']),
-        request: [
-            { name: 'id', type: 'param', schema: Type.Number() },
-            { type: 'body', schema: Type.Partial(Type.Omit(PetSchema, ['id'])) },
-        ],
+        validate: {
+            response: Type.Omit(PetSchema, ['microchip']),
+            request: [
+                { name: 'id', type: 'param', schema: Type.Number() },
+                { type: 'body', schema: Type.Partial(Type.Omit(PetSchema, ['id'])) },
+            ],
+        }
     })
     // the order of the controller method parameters must correspond to the order/types of
     // "request" validators, including "required" configuration. Additionally nestjs-typebox will
@@ -127,8 +130,10 @@ export class PetController {
     @HttpEndpoint({
         method: 'DELETE',
         path: ':id',
-        response: Type.Omit(PetSchema, ['microchip']),
-        request: [{ name: 'id', type: 'param', schema: Type.Number() }],
+        validate: {
+            response: Type.Omit(PetSchema, ['microchip']),
+            request: [{ name: 'id', type: 'param', schema: Type.Number() }],
+        }
     })
     async deletePet(id: number) {
         return this.petService.deletePet(id);
