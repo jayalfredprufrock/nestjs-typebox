@@ -54,18 +54,7 @@ export const PartialSome = <T extends TObject, K extends AllKeys<Static<T>>[]>(
     return Type.Composite([Type.Omit(schema, keys), Type.Partial(Type.Pick(schema, keys))], options);
 };
 
-/*
-NOTE: Latest version of typebox makes Omit/Pick distributive by default, but loses strongly typed keys
-
-export const DistOmit = <T extends TSchema, K extends AllKeys<Static<T>>[]>(schema: T, keys: readonly [...K], options?: SchemaOptions) => {
-    return Type.Extends(schema, Type.Unknown(), Type.Omit(schema, keys), Type.Never(), options);
-};
-
-export const DistPick = <T extends TSchema, K extends AllKeys<Static<T>>[]>(schema: T, keys: readonly [...K], options?: SchemaOptions) => {
-    return Type.Extends(schema, Type.Unknown(), Type.Pick(schema, keys), Type.Never(), options);
-};
-*/
-
+// NOTE: Latest version of typebox makes Omit/Pick distributive by default, but loses strongly typed keys
 export const DistOmit = <T extends TSchema, K extends AllKeys<Static<T>>[]>(schema: T, keys: readonly [...K], options?: SchemaOptions) => {
     return Type.Omit(schema, keys, options);
 };
