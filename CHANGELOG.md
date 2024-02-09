@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.0.0-next.7
+
+### Patch Changes
+
+- 87181c4: fix: revert prev commit for now
+
 ## 3.0.0-next.6
 
 ### Patch Changes
