@@ -1,4 +1,16 @@
-import { SchemaOptions, Static, TLiteral, TLiteralValue, TObject, TPropertyKey, TSchema, TUnion, Type } from '@sinclair/typebox/type';
+import {
+    PickResolve,
+    SchemaOptions,
+    Static,
+    TLiteral,
+    TLiteralValue,
+    TObject,
+    TOmitResolve,
+    TPropertyKey,
+    TSchema,
+    TUnion,
+    Type,
+} from '@sinclair/typebox/type';
 
 import { AllKeys, Obj, TPartialSome } from './types.js';
 
@@ -55,11 +67,19 @@ export const PartialSome = <T extends TObject, K extends AllKeys<Static<T>>[]>(
 };
 
 // NOTE: Latest version of typebox makes Omit/Pick distributive by default, but loses strongly typed keys
-export const DistOmit = <T extends TSchema, K extends AllKeys<Static<T>>[]>(schema: T, keys: readonly [...K], options?: SchemaOptions) => {
+export const DistOmit = <T extends TSchema, K extends AllKeys<Static<T>>[]>(
+    schema: T,
+    keys: readonly [...K],
+    options?: SchemaOptions
+): TOmitResolve<T, K> => {
     return Type.Omit(schema, keys, options);
 };
 
-export const DistPick = <T extends TSchema, K extends AllKeys<Static<T>>[]>(schema: T, keys: readonly [...K], options?: SchemaOptions) => {
+export const DistPick = <T extends TSchema, K extends AllKeys<Static<T>>[]>(
+    schema: T,
+    keys: readonly [...K],
+    options?: SchemaOptions
+): PickResolve<T, K> => {
     return Type.Pick(schema, keys, options);
 };
 
