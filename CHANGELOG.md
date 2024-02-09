@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.0.0-next.6
+
+### Patch Changes
+
+- 09f6e3e: fix: explcitly type DistPick and DistOmit return types
+
 ## 3.0.0-next.5
 
 ### Patch Changes
