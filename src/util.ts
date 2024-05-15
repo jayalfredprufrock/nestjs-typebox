@@ -1,4 +1,4 @@
-import { SchemaOptions, Static, TLiteral, TLiteralValue, TObject, TPropertyKey, TSchema, TUnion, Type } from '@sinclair/typebox/type';
+import { SchemaOptions, Static, TLiteral, TObject, TPropertyKey, TSchema, TUnion, Type } from '@sinclair/typebox/type';
 
 import { AllKeys, Obj, TPartialSome } from './types.js';
 
@@ -39,11 +39,15 @@ export const capitalize = <S extends string>(str: S): Capitalize<S> => {
 
 export const isObj = (obj: unknown): obj is Obj => obj !== null && typeof obj === 'object';
 
-export const LiteralUnion = <V extends TLiteralValue[]>(values: readonly [...V], options?: SchemaOptions) => {
+export type TUnionOfString<T extends string[], Acc extends TSchema[] = []> = T extends [infer L extends string, ...infer R extends string[]]
+    ? TUnionOfString<R, [...Acc, TLiteral<L>]>
+    : Acc;
+
+export const LiteralUnion = <const T extends string[]>(values: [...T], options?: SchemaOptions): TUnion<TUnionOfString<T>> => {
     return Type.Union(
         values.map(value => Type.Literal(value)),
         options
-    ) as TUnion<{ [I in keyof V]: TLiteral<V[I]> }>;
+    ) as never;
 };
 
 export const PartialSome = <T extends TObject, K extends AllKeys<Static<T>>[]>(

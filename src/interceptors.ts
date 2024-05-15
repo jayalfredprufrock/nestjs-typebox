@@ -13,7 +13,7 @@ export class TypeboxTransformInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
         return next.handle().pipe(
             map(data => {
-                const responseMeta = this.reflector.get(DECORATORS.API_RESPONSE, context.getHandler());
+                const responseMeta = this.reflector.get(DECORATORS.API_RESPONSE, context.getHandler()) ?? {};
                 const validator = (responseMeta['200'] || responseMeta['201'] || {})['type'];
 
                 if (!isSchemaValidator(validator)) {
