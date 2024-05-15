@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.0.0-next.8
+
+### Patch Changes
+
+- 03645a5: fix: handle empty responses
+
 ## 3.0.0-next.7
 
 ### Patch Changes
