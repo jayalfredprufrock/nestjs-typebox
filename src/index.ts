@@ -1,3 +1,4 @@
+export * from './configure.js';
 export * from './decorators.js';
 export * from './exceptions.js';
 export * from './formats.js';

@@ -1,13 +1,7 @@
 # nestjs-typebox
 
 This library provides helper utilities for writing and validating NestJS APIs using [TypeBox](https://github.com/sinclairzx81/typebox) as
-an alternative to class-validator/class-transformer. It also includes a patch for @nestjs/swagger allowing OpenAPI generation to continue working.
-
-> ### Warning
->
-> As of 2.x, this library is undergoing active development and will stabilize with the 3.x release.
-> It was decided to drop support for the class-based DTO approach in favor of a pure decorator
-> approach, since the class-based approach made it impossible to validate complex union types.
+an alternative to class-validator/class-transformer. Can be configured to patch @nestjs/swagger allowing OpenAPI generation to continue working.
 
 ## Installation
 
@@ -32,7 +26,9 @@ export const PetSchemaBase = Type.Object({
         examples: ['Figaro'],
     }),
     microchip: Type.String(){
-        description: 'Secret microchip number. Not sent to client'
+        minLength: 10,
+        description: 'Secret microchip number. Not sent to client',
+        errorMessage: '"microchip" is required and must be at least 10 characters.'
     },
 });
 
@@ -117,7 +113,7 @@ export class PetController {
                 { name: 'id', type: 'param', schema: Type.Number() },
                 { type: 'body', schema: Type.Partial(Type.Omit(PetSchema, ['id'])) },
             ],
-        }
+        },
     })
     // the order of the controller method parameters must correspond to the order/types of
     // "request" validators, including "required" configuration. Additionally nestjs-typebox will
@@ -133,7 +129,7 @@ export class PetController {
         validate: {
             response: Type.Omit(PetSchema, ['microchip']),
             request: [{ name: 'id', type: 'param', schema: Type.Number() }],
-        }
+        },
     })
     async deletePet(id: number) {
         return this.petService.deletePet(id);
@@ -141,23 +137,22 @@ export class PetController {
 }
 ```
 
-### 3. Apply patch for OpenAPI/Swagger Support
+### 3. Optionally configure
 
-> As of 2.x, it is no longer necessary to register any interceptors/pipes,
-> global or otherwise.
+Calling configure allows for the patching of the swagger plugin, custom
+string formats (currently only email), and support for `errorMessage` overrides
+within schema options.
 
 ```ts
 // main.ts
 
 import { Reflector } from '@nestjs/core';
-import { patchNestJsSwagger, applyFormats, TypeboxValidationPipe, TypeboxTransformInterceptor } from 'nestjs-typebox';
+import { configureNestjsTypebox } from 'nestjs-typebox';
 
-// provide swagger OpenAPI generator support
-patchNestJsSwagger();
-
-// provide custom JSON schema string format support
-// currently only "email".
-applyFormats();
+configureNestjsTypebox({
+    patchSwagger: true,
+    setFormats: true,
+});
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);

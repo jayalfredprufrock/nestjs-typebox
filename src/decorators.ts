@@ -6,13 +6,13 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
 import { Static, TSchema, Type, TypeGuard } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
+import { Clean, Convert } from '@sinclair/typebox/value';
 
 import { TypeboxValidationException } from './exceptions.js';
 import { TypeboxTransformInterceptor } from './interceptors.js';
 import type {
     HttpEndpointDecoratorConfig,
     MethodDecorator,
-    Obj,
     RequestConfigsToTypes,
     RequestValidatorConfig,
     ResponseValidatorConfig,
@@ -20,7 +20,7 @@ import type {
     SchemaValidatorConfig,
     ValidatorConfig,
 } from './types.js';
-import { capitalize, coerceType, isObj } from './util.js';
+import { capitalize } from './util.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isSchemaValidator(type: any): type is SchemaValidator {
@@ -48,61 +48,22 @@ export function buildSchemaValidator(config: SchemaValidatorConfig): SchemaValid
         schema,
         name,
         check: checker.Check,
-        validate(dataOrArray: unknown) {
-            let jsonSchema: Obj;
-            let processedDataOrArray = dataOrArray;
-
-            if (coerceTypes || stripUnknownProps) {
-                let dataArray: unknown[];
-
-                if (Array.isArray(dataOrArray)) {
-                    jsonSchema = schema.items ?? {};
-                    dataArray = dataOrArray;
-                } else {
-                    jsonSchema = schema;
-                    dataArray = [dataOrArray];
-                }
-
-                const knownPropTypes = ((jsonSchema.anyOf ?? jsonSchema.allOf ?? [jsonSchema]) as Obj[]).reduce(
-                    (obj: Obj<string>, schema) => {
-                        for (const [prop, def] of Object.entries(schema.properties ?? {})) {
-                            obj[prop] = def && typeof def === 'object' && 'type' in def ? String(def.type) : 'unknown';
-                        }
-                        return obj;
-                    },
-                    {}
-                );
-
-                for (let i = 0; i < dataArray.length; i++) {
-                    const data = dataArray[i];
-                    if (isObj(data)) {
-                        const processedData = stripUnknownProps ? {} : data;
-                        for (const prop in data) {
-                            if (knownPropTypes[prop] === undefined) continue;
-
-                            if (stripUnknownProps) {
-                                processedData[prop] = data[prop];
-                            }
-
-                            if (coerceTypes) {
-                                processedData[prop] = coerceType(knownPropTypes[prop], data[prop]);
-                            }
-                        }
-                        dataArray[i] = processedData;
-                    } else if (coerceTypes && typeof jsonSchema.type === 'string') {
-                        dataArray[i] = coerceType(jsonSchema.type, data);
-                    }
-                }
-
-                processedDataOrArray = Array.isArray(dataOrArray) ? dataArray : dataArray[0];
-            }
-
-            if (processedDataOrArray === undefined && !required) {
+        validate(data: unknown) {
+            if (data === undefined && !required) {
                 return;
             }
 
-            if (checker.Check(processedDataOrArray)) return processedDataOrArray;
-            throw new TypeboxValidationException(type, checker.Errors(processedDataOrArray));
+            if (stripUnknownProps) {
+                Clean(schema, data);
+            }
+
+            if (coerceTypes) {
+                Convert(schema, data);
+            }
+
+            if (checker.Check(data)) return data;
+
+            throw new TypeboxValidationException(type, checker.Errors(data));
         },
     };
 }
@@ -212,29 +173,29 @@ export const HttpEndpoint = <
 
     const decorators: MethodDecorator[] = [nestHttpDecoratorMap[method](path), HttpCode(responseCode), ApiOperation(apiOperationOptions)];
 
-    if (validate) {
-        if (path && validate.request) {
-            const pathParams = path
-                .split('/')
-                .filter(seg => seg.startsWith(':'))
-                .map(seg => ({ name: seg.replace(/^:(.*)\\?$/, '$1'), required: !seg.endsWith('?') }));
+    if (path) {
+        const pathParams = path
+            .split('/')
+            .filter(seg => seg.startsWith(':'))
+            .map(seg => ({ name: seg.replace(/^:(.*)\\?$/, '$1'), required: !seg.endsWith('?') }));
 
-            for (const pathParam of pathParams) {
-                const paramValidator = validate.request.find(v => v.name === pathParam.name);
-                if (!paramValidator) {
-                    throw new Error(`Path param "${pathParam.name}" is missing a request validator.`);
-                }
-                if (paramValidator.required === false && pathParam.required === true) {
-                    throw new Error(`Optional path param "${pathParam.name}" is required in validator.`);
-                }
+        for (const pathParam of pathParams) {
+            const paramValidator = validate?.request?.find(v => v.name === pathParam.name);
+            if (!paramValidator) {
+                throw new Error(`Path param "${pathParam.name}" is missing a request validator.`);
             }
-
-            const missingPathParam = validate.request.find(v => v.type === 'param' && !pathParams.some(p => p.name == v.name));
-            if (missingPathParam) {
-                throw new Error(`Request validator references non-existent path parameter "${missingPathParam.name}".`);
+            if (paramValidator.required === false && pathParam.required === true) {
+                throw new Error(`Optional path param "${pathParam.name}" is required in validator.`);
             }
         }
 
+        const missingPathParam = validate?.request?.find(v => v.type === 'param' && !pathParams.some(p => p.name == v.name));
+        if (missingPathParam) {
+            throw new Error(`Request validator references non-existent path parameter "${missingPathParam.name}".`);
+        }
+    }
+
+    if (validate) {
         decorators.push(Validate(validate));
     }
 

@@ -7,6 +7,11 @@ export type AllKeys<T> = T extends unknown ? Exclude<keyof T, symbol> : never;
 
 export type Obj<T = unknown> = Record<string, T>;
 
+export interface Configure {
+    patchSwagger?: boolean;
+    setFormats?: boolean;
+}
+
 // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
 export type MethodDecorator<T extends Function = any> = (
     // eslint-disable-next-line @typescript-eslint/ban-types
