@@ -1,5 +1,26 @@
 # nestjs-typebox
 
+## 3.0.0
+
+### Major Changes
+
+-   2f56ec8: feat: upgraded to typebox 0.32.0
+
+### Minor Changes
+
+-   ffa676f: feat: upgrading typebox in preparation for v3 releast
+
+### Patch Changes
+
+-   95c0123: chore: upgrade typebox to latest stable
+-   163be99: fix: export types
+-   ff46411: feat: add some more typebox utilities
+-   87181c4: fix: revert prev commit for now
+-   09f6e3e: fix: explcitly type DistPick and DistOmit return types
+-   56c4916: fix: simplify DistOmit and DistPick typings for better inference
+-   03645a5: fix: handle empty responses
+-   7a0a776: Add UnionPartialSome typebox helper
+
 ## 3.0.0-next.9
 
 ### Minor Changes
