@@ -2,6 +2,7 @@
 
 This library provides helper utilities for writing and validating NestJS APIs using [TypeBox](https://github.com/sinclairzx81/typebox) as
 an alternative to class-validator/class-transformer. Can be configured to patch @nestjs/swagger allowing OpenAPI generation to continue working.
+Supports property defaults, basic type coercion, transforms, stripping unknown properties, and custom error messages. See typebox docs for more info.
 
 ## Installation
 
