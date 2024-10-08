@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.0.1
+
+### Patch Changes
+
+-   4f2fcc8: fix: detect schemas with defaults properly
+
 ## 3.0.0
 
 ### Major Changes
