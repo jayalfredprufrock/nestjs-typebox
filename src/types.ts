@@ -3,6 +3,8 @@ import { ApiOperationOptions } from '@nestjs/swagger';
 import type { Static, TComposite, TOmit, TPartial, TPick, TSchema } from '@sinclair/typebox';
 import type { TypeCheck } from '@sinclair/typebox/compiler';
 
+import { SchemaAnalysis } from './analyze-schema.js';
+
 export type AllKeys<T> = T extends unknown ? Exclude<keyof T, symbol> : never;
 
 export type Obj<T = unknown> = Record<string, T>;
@@ -34,6 +36,7 @@ export interface HttpEndpointDecoratorConfig<
 export interface SchemaValidator<T extends TSchema = TSchema> {
     schema: T;
     name: string;
+    analysis: SchemaAnalysis;
     check: TypeCheck<T>['Check'];
     validate(data: Obj | Obj[]): Static<T>;
 }

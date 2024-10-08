@@ -4,10 +4,11 @@ import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
 import { extendArrayMetadata } from '@nestjs/common/utils/extend-metadata.util.js';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
-import { Static, TSchema, Type, TypeGuard } from '@sinclair/typebox';
+import { type Static, type TSchema, Type, TypeGuard } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
-import { Clean, Convert } from '@sinclair/typebox/value';
+import { Clean, Convert, Default, TransformDecode } from '@sinclair/typebox/value';
 
+import { analyzeSchema } from './analyze-schema.js';
 import { TypeboxValidationException } from './exceptions.js';
 import { TypeboxTransformInterceptor } from './interceptors.js';
 import type {
@@ -42,28 +43,42 @@ export function buildSchemaValidator(config: SchemaValidatorConfig): SchemaValid
         throw new Error(`Validator "${name}" expects a TypeBox schema.`);
     }
 
-    const checker = TypeCompiler.Compile(schema);
+    const analysis = analyzeSchema(schema);
+    const references = [...analysis.references.values()];
+
+    const checker = TypeCompiler.Compile(schema, references);
 
     return {
         schema,
         name,
         check: checker.Check,
+        analysis,
         validate(data: unknown) {
+            if (analysis.hasDefault) {
+                Default(schema, references, data);
+            }
+
             if (data === undefined && !required) {
                 return;
             }
 
             if (stripUnknownProps) {
-                Clean(schema, data);
+                Clean(schema, references, data);
             }
 
             if (coerceTypes) {
-                Convert(schema, data);
+                Convert(schema, references, data);
             }
 
-            if (checker.Check(data)) return data;
+            if (!checker.Check(data)) {
+                throw new TypeboxValidationException(type, checker.Errors(data));
+            }
 
-            throw new TypeboxValidationException(type, checker.Errors(data));
+            if (analysis.hasTransform) {
+                return TransformDecode(schema, references, data);
+            }
+
+            return data;
         },
     };
 }
