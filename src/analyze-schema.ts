@@ -44,10 +44,7 @@ function FromUnion(schema: TUnion, analysis: SchemaAnalysis) {
     schema.anyOf.forEach(schema => Visit(schema, analysis));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function Visit(schema: TSchema, analysis: SchemaAnalysis): void {
-    if (!TypeGuard.IsKind(schema)) return;
-
     analysis.hasTransform = analysis.hasTransform || TypeGuard.IsTransform(schema);
     analysis.hasDefault = analysis.hasDefault || 'default' in schema;
 
