@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.0.2
+
+### Patch Changes
+
+-   23d5c89: fix: cooercion and defaults of param and query request types
+
 ## 3.0.1
 
 ### Patch Changes
