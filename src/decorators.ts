@@ -55,7 +55,7 @@ export function buildSchemaValidator(config: SchemaValidatorConfig): SchemaValid
         analysis,
         validate(data: unknown) {
             if (analysis.hasDefault) {
-                Default(schema, references, data);
+                data = Default(schema, references, data);
             }
 
             if (data === undefined && !required) {
@@ -63,11 +63,11 @@ export function buildSchemaValidator(config: SchemaValidatorConfig): SchemaValid
             }
 
             if (stripUnknownProps) {
-                Clean(schema, references, data);
+                data = Clean(schema, references, data);
             }
 
             if (coerceTypes) {
-                Convert(schema, references, data);
+                data = Convert(schema, references, data);
             }
 
             if (!checker.Check(data)) {
@@ -192,7 +192,9 @@ export const HttpEndpoint = <
         const pathParams = path
             .split('/')
             .filter(seg => seg.startsWith(':'))
-            .map(seg => ({ name: seg.replace(/^:(.*)\\?$/, '$1'), required: !seg.endsWith('?') }));
+            .map(seg => ({ name: seg.replace(/^:([^\?]+)\??$/, '$1'), required: !seg.endsWith('?') }));
+
+        // TODO: handle optional path parameters
 
         for (const pathParam of pathParams) {
             const paramValidator = validate?.request?.find(v => v.name === pathParam.name);

@@ -148,9 +148,9 @@ within schema options.
 // main.ts
 
 import { Reflector } from '@nestjs/core';
-import { configureNestjsTypebox } from 'nestjs-typebox';
+import { configureNestJsTypebox } from 'nestjs-typebox';
 
-configureNestjsTypebox({
+configureNestJsTypebox({
     patchSwagger: true,
     setFormats: true,
 });
