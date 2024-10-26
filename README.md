@@ -10,12 +10,15 @@ Supports property defaults, basic type coercion, transforms, stripping unknown p
 npm i nestjs-typebox @sinclair/typebox
 ```
 
+> **Important:** Note that `nestjs-typebox` is an alternative to the class-validator DTO approach detailed in the NestJS docs, and is
+> meant to fully replace it and all of the built-in validation/parsing pipes. Make sure you remove any global validation/parsing pipes
+> before installing this library and avoid using any local validation/parsing pipe decorators in combination with this library's decorators.
+
 ## Usage
 
 ### 1. Create TypeBox schema
 
-> Important: Note that `nestjs-typebox` is an alternative to the class-validator DTO approach detailed in the NestJS docs, and is
-> meant to fully replace it and all of the built-in validation/parsing pipes. The example below demonstrates a discriminated union type,
+> The example below demonstrates a discriminated union type,
 > which cannot be achieved using class-based introspection approaches like that of class-validator.
 
 ```ts
