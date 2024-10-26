@@ -14,8 +14,9 @@ npm i nestjs-typebox @sinclair/typebox
 
 ### 1. Create TypeBox schema
 
-> The example below demonstrates a discriminated union type, which was previously incompatible with
-> the class-based DTO approach used in v1. JSON schema fields like "description" will be parsed by the Swagger generator.
+> Important: Note that `nestjs-typebox` is an alternative to the class-validator DTO approach detailed in the NestJS docs, and is
+> meant to fully replace it and all of the built-in validation/parsing pipes. The example below demonstrates a discriminated union type,
+> which cannot be achieved using class-based introspection approaches like that of class-validator.
 
 ```ts
 import { Type } from '@sinclair/typebox';
