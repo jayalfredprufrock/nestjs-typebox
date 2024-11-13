@@ -52,6 +52,8 @@ export interface ResponseValidatorConfig<T extends TSchema = TSchema> extends Va
     schema: T;
     type?: 'response';
     responseCode?: number;
+    description?: string;
+    example?: Static<T>;
     required?: true;
     pipes?: never;
 }
@@ -91,12 +93,12 @@ export interface ValidatorConfig<
 
 export type RequestConfigsToTypes<RequestConfigs extends RequestValidatorConfig[]> = {
     [K in keyof RequestConfigs]: RequestConfigs[K]['required'] extends false
-        ? RequestConfigs[K]['schema'] extends TSchema
-            ? Static<RequestConfigs[K]['schema']> | undefined
-            : string | undefined
-        : RequestConfigs[K]['schema'] extends TSchema
-          ? Static<RequestConfigs[K]['schema']>
-          : string;
+    ? RequestConfigs[K]['schema'] extends TSchema
+    ? Static<RequestConfigs[K]['schema']> | undefined
+    : string | undefined
+    : RequestConfigs[K]['schema'] extends TSchema
+    ? Static<RequestConfigs[K]['schema']>
+    : string;
 };
 
 export type TPartialSome<T extends TSchema, K extends PropertyKey[]> = TComposite<[TOmit<T, K>, TPartial<TPick<T, K>>]>;

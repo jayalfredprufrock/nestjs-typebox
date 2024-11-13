@@ -109,6 +109,8 @@ export function Validate<
 
             const {
                 responseCode = 200,
+                description,
+                example,
                 required = true,
                 stripUnknownProps = true,
                 name = `${methodName}Response`,
@@ -118,7 +120,11 @@ export function Validate<
             const validator = buildSchemaValidator({ ...config, required, stripUnknownProps, name, type: 'response' });
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Reflect.defineMetadata(DECORATORS.API_RESPONSE, { [responseCode]: { type: validator } }, (target as any)[key]);
+            Reflect.defineMetadata(
+                DECORATORS.API_RESPONSE,
+                { [responseCode]: { type: validator, description, example } },
+                (target as any)[key]
+            );
         }
 
         requestValidatorConfigs?.forEach((validatorConfig, index) => {
