@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.1.0
+
+### Minor Changes
+
+-   0e46d5c: feat: support for request description and example
+
 ## 3.0.2
 
 ### Patch Changes
