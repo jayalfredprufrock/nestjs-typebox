@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 3.1.1
+
+### Patch Changes
+
+-   659837c: fix: stricter response validation typings
+
 ## 3.1.0
 
 ### Minor Changes
