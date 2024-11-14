@@ -85,13 +85,12 @@ export function buildSchemaValidator(config: SchemaValidatorConfig): SchemaValid
 
 export function Validate<
     T extends TSchema,
-    ResponseValidator extends ResponseValidatorConfig<T>,
     RequestValidators extends RequestValidatorConfig[],
     MethodDecoratorType extends (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...args: [...RequestConfigsToTypes<RequestValidators>, ...any[]]
-    ) => Promise<Static<ResponseValidator['schema']>> | Static<ResponseValidator['schema']>,
->(validatorConfig: ValidatorConfig<T, ResponseValidator, RequestValidators>): MethodDecorator<MethodDecoratorType> {
+    ) => Promise<Static<T>> | Static<T>,
+>(validatorConfig: ValidatorConfig<T, RequestValidators>): MethodDecorator<MethodDecoratorType> {
     return (target, key, descriptor) => {
         let args = Reflect.getMetadata(ROUTE_ARGS_METADATA, target.constructor, key) ?? {};
 
@@ -181,14 +180,13 @@ const nestHttpDecoratorMap = {
 
 export const HttpEndpoint = <
     S extends TSchema,
-    ResponseConfig extends Omit<ResponseValidatorConfig<S>, 'responseCode'>,
     RequestConfigs extends RequestValidatorConfig[],
     MethodDecoratorType extends (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...args: [...RequestConfigsToTypes<RequestConfigs>, ...any[]]
-    ) => Promise<Static<ResponseConfig['schema']>> | Static<ResponseConfig['schema']>,
+    ) => Promise<Static<S>> | Static<S>,
 >(
-    config: HttpEndpointDecoratorConfig<S, ResponseConfig, RequestConfigs>
+    config: HttpEndpointDecoratorConfig<S, RequestConfigs>
 ): MethodDecorator<MethodDecoratorType> => {
     const { method, responseCode = 200, path, validate, ...apiOperationOptions } = config;
 

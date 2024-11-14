@@ -24,13 +24,12 @@ export type MethodDecorator<T extends Function = any> = (
 
 export interface HttpEndpointDecoratorConfig<
     S extends TSchema = TSchema,
-    ResponseConfig extends ResponseValidatorConfig<S> = ResponseValidatorConfig<S>,
     RequestConfigs extends RequestValidatorConfig[] = RequestValidatorConfig[],
 > extends Omit<ApiOperationOptions, 'requestBody' | 'parameters'> {
     method: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT';
     responseCode?: number;
     path?: string;
-    validate?: ValidatorConfig<S, ResponseConfig, RequestConfigs>;
+    validate?: ValidatorConfig<S, RequestConfigs>;
 }
 
 export interface SchemaValidator<T extends TSchema = TSchema> {
@@ -82,12 +81,8 @@ export type SchemaValidatorConfig = RequestValidatorConfig | ResponseValidatorCo
 
 export type ValidatorType = NonNullable<SchemaValidatorConfig['type']>;
 
-export interface ValidatorConfig<
-    S extends TSchema,
-    ResponseConfig extends ResponseValidatorConfig<S>,
-    RequestConfigs extends RequestValidatorConfig[],
-> {
-    response?: S | ResponseConfig;
+export interface ValidatorConfig<S extends TSchema, RequestConfigs extends RequestValidatorConfig[]> {
+    response?: ResponseValidatorConfig<S> | S;
     request?: [...RequestConfigs];
 }
 
