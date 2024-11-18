@@ -1,6 +1,6 @@
 {
     "name": "nestjs-typebox",
-    "version": "3.1.1",
+    "version": "4.0.0-next.0",
     "description": "",
     "author": "Andrew Smiley <jayalfredprufrock@gmail.com>",
     "license": "MIT",
