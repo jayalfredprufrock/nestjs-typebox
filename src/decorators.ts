@@ -4,9 +4,9 @@ import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
 import { extendArrayMetadata } from '@nestjs/common/utils/extend-metadata.util.js';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { DECORATORS } from '@nestjs/swagger/dist/constants.js';
-import { type Static, type TSchema, Type, TypeGuard } from '@sinclair/typebox';
+import { StaticDecode, type TSchema, Type, TypeGuard } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
-import { Clean, Convert, Default, TransformDecode } from '@sinclair/typebox/value';
+import { Clean, Convert, Default, TransformDecode, TransformEncode } from '@sinclair/typebox/value';
 
 import { analyzeSchema } from './analyze-schema.js';
 import { TypeboxValidationException } from './exceptions.js';
@@ -75,7 +75,7 @@ export function buildSchemaValidator(config: SchemaValidatorConfig): SchemaValid
             }
 
             if (analysis.hasTransform) {
-                return TransformDecode(schema, references, data);
+                return type === 'response' ? TransformEncode(schema, references, data) : TransformDecode(schema, references, data);
             }
 
             return data;
@@ -89,7 +89,7 @@ export function Validate<
     MethodDecoratorType extends (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...args: [...RequestConfigsToTypes<RequestValidators>, ...any[]]
-    ) => Promise<Static<T>> | Static<T>,
+    ) => Promise<StaticDecode<T>> | StaticDecode<T>,
 >(validatorConfig: ValidatorConfig<T, RequestValidators>): MethodDecorator<MethodDecoratorType> {
     return (target, key, descriptor) => {
         let args = Reflect.getMetadata(ROUTE_ARGS_METADATA, target.constructor, key) ?? {};
@@ -184,7 +184,7 @@ export const HttpEndpoint = <
     MethodDecoratorType extends (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...args: [...RequestConfigsToTypes<RequestConfigs>, ...any[]]
-    ) => Promise<Static<S>> | Static<S>,
+    ) => Promise<StaticDecode<S>> | StaticDecode<S>,
 >(
     config: HttpEndpointDecoratorConfig<S, RequestConfigs>
 ): MethodDecorator<MethodDecoratorType> => {

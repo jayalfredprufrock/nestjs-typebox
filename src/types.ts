@@ -1,6 +1,6 @@
 import type { PipeTransform, Type } from '@nestjs/common';
 import { ApiOperationOptions } from '@nestjs/swagger';
-import type { Static, TComposite, TOmit, TPartial, TPick, TSchema } from '@sinclair/typebox';
+import type { Static, StaticDecode, TComposite, TOmit, TPartial, TPick, TSchema } from '@sinclair/typebox';
 import type { TypeCheck } from '@sinclair/typebox/compiler';
 
 import { SchemaAnalysis } from './analyze-schema.js';
@@ -37,7 +37,7 @@ export interface SchemaValidator<T extends TSchema = TSchema> {
     name: string;
     analysis: SchemaAnalysis;
     check: TypeCheck<T>['Check'];
-    validate(data: Obj | Obj[]): Static<T>;
+    validate(data: Obj | Obj[]): unknown;
 }
 export interface ValidatorConfigBase {
     schema?: TSchema;
@@ -89,10 +89,10 @@ export interface ValidatorConfig<S extends TSchema, RequestConfigs extends Reque
 export type RequestConfigsToTypes<RequestConfigs extends RequestValidatorConfig[]> = {
     [K in keyof RequestConfigs]: RequestConfigs[K]['required'] extends false
     ? RequestConfigs[K]['schema'] extends TSchema
-    ? Static<RequestConfigs[K]['schema']> | undefined
+    ? StaticDecode<RequestConfigs[K]['schema']> | undefined
     : string | undefined
     : RequestConfigs[K]['schema'] extends TSchema
-    ? Static<RequestConfigs[K]['schema']>
+    ? StaticDecode<RequestConfigs[K]['schema']>
     : string;
 };
 

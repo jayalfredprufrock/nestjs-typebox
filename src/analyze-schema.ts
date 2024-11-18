@@ -1,5 +1,5 @@
 import type { TArray, TIntersect, TObject, TRecord, TRef, TSchema, TTuple, TUnion } from '@sinclair/typebox';
-import { Deref, Kind, TypeGuard } from '@sinclair/typebox';
+import { Kind, TypeGuard } from '@sinclair/typebox';
 
 function FromArray(schema: TArray, analysis: SchemaAnalysis): void {
     Visit(schema.items, analysis);
@@ -31,7 +31,10 @@ function FromRecord(schema: TRecord, analysis: SchemaAnalysis) {
 }
 
 function FromRef(schema: TRef, analysis: SchemaAnalysis) {
-    Visit(Deref(schema, [...analysis.references.values()]), analysis);
+    const target = analysis.references.get(schema.$ref);
+    if (target) {
+        Visit(target, analysis);
+    }
 }
 
 function FromTuple(schema: TTuple, analysis: SchemaAnalysis) {

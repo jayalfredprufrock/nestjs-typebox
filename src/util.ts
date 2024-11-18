@@ -1,37 +1,6 @@
-import { SchemaOptions, Static, TLiteral, TObject, TPropertyKey, TSchema, TUnion, Type } from '@sinclair/typebox/type';
+import { SchemaOptions, Static, StringOptions, TLiteral, TObject, TPropertyKey, TSchema, TUnion, Type } from '@sinclair/typebox/type';
 
 import { AllKeys, Obj, TPartialSome } from './types.js';
-
-export const coerceToNumber = (val: unknown, integer?: boolean): unknown => {
-    switch (typeof val) {
-        case 'number':
-            return integer ? Math.floor(val) : val;
-        case 'boolean':
-            return val === true ? 1 : 0;
-        case 'string': {
-            const v = Number(val);
-            if (Number.isFinite(v)) {
-                return integer ? Math.floor(v) : v;
-            }
-            break;
-        }
-        case 'object': {
-            if (val === null) return 0;
-            break;
-        }
-    }
-    return val;
-};
-
-export const coerceType = (type: string, val: unknown): unknown => {
-    switch (type) {
-        case 'number':
-        case 'integer':
-            return coerceToNumber(val, type === 'integer');
-        default:
-            return val;
-    }
-};
 
 export const capitalize = <S extends string>(str: S): Capitalize<S> => {
     return (str.charAt(0).toUpperCase() + str.slice(1)) as Capitalize<S>;
@@ -197,3 +166,8 @@ export function UnionPartialSome<
 export function UnionPartialSome(union: TUnion<TObject[]>, keys: readonly [...TPropertyKey[]]): TUnion {
     return Type.Union(union.anyOf.map(schema => PartialSome(schema, keys)));
 }
+
+export const IsoDate = (options?: StringOptions) =>
+    Type.Transform(Type.String({ format: 'date-time', ...options }))
+        .Decode(value => new Date(value))
+        .Encode(value => value.toISOString());
