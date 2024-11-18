@@ -5,6 +5,7 @@
     "nestjs-typebox": "3.1.0"
   },
   "changesets": [
+    "healthy-kids-hug",
     "plenty-flowers-develop"
   ]
 }

@@ -1,5 +1,11 @@
 # nestjs-typebox
 
+## 4.0.0-next.1
+
+### Patch Changes
+
+-   5369669: fix: apply response transformation before validation
+
 ## 4.0.0-next.0
 
 ### Major Changes
