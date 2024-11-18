@@ -70,12 +70,12 @@ export function buildSchemaValidator(config: SchemaValidatorConfig): SchemaValid
                 data = Convert(schema, references, data);
             }
 
-            if (!checker.Check(data)) {
-                throw new TypeboxValidationException(type, checker.Errors(data));
+            if (analysis.hasTransform) {
+                data = type === 'response' ? TransformEncode(schema, references, data) : TransformDecode(schema, references, data);
             }
 
-            if (analysis.hasTransform) {
-                return type === 'response' ? TransformEncode(schema, references, data) : TransformDecode(schema, references, data);
+            if (!checker.Check(data)) {
+                throw new TypeboxValidationException(type, checker.Errors(data));
             }
 
             return data;
