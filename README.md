@@ -145,7 +145,7 @@ export class PetController {
 ### 3. Optionally configure
 
 Calling configure allows for the patching of the swagger plugin, custom
-string formats (currently only email), and support for `errorMessage` overrides
+string formats (email, url, date, time, date-time, uuid), and support for `errorMessage` overrides
 within schema options.
 
 ```ts
